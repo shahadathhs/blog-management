@@ -18,6 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "nest:m": "npx nest g resource",
     "prisma": "npx prisma",
     "prisma:init": "npx prisma init",
     "prisma:pull": "npx prisma db pull",
@@ -32,6 +33,7 @@
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "^6.8.2",
     "reflect-metadata": "^0.2.2",
