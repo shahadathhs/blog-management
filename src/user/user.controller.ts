@@ -17,6 +17,10 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiOperation({
+    summary: 'Create User',
+    description: 'Use POST method in `/user` route to create a new user.',
+  })
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -24,7 +28,7 @@ export class UserController {
 
   @ApiOperation({
     summary: 'Get all users',
-    description: 'Use GET method in `/user` route to get all the users',
+    description: 'Use GET method in `/user` route to get all the users.',
   })
   @Get()
   findAll() {
@@ -33,16 +37,16 @@ export class UserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+    return this.userService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+    return this.userService.remove(id);
   }
 }
