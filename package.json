@@ -26,9 +26,11 @@
     "prisma:generate": "npx prisma generate",
     "prisma:reset": "npx prisma migrate reset",
     "prisma:migrate": "npx prisma migrate dev",
+    "prisma:deploy": "npx prisma migrate deploy",
     "prisma:studio": "npx prisma studio",
     "prisma:validate": "npx prisma validate",
-    "prisma:format": "npx prisma format"
+    "prisma:format": "npx prisma format",
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
