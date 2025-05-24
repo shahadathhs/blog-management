@@ -10,7 +10,7 @@ async function bootstrap() {
   // * Swagger config
   const config = new DocumentBuilder()
     .setTitle('Blog API')
-    .setDescription('API docs for your blog backend')
+    .setDescription('API docs for blog management backend')
     .setVersion('1.0')
     .build();
 

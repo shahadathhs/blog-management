@@ -15,8 +15,21 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return a welcome JSON with message, description, docs, author, and timestamp', () => {
+      const result = appController.getWelcome();
+
+      expect(result).toHaveProperty(
+        'message',
+        '👋 Welcome to the Blog Management API!',
+      );
+      expect(result).toHaveProperty('description');
+      expect(result).toHaveProperty(
+        'docs',
+        'Visit /api for Swagger API documentation.',
+      );
+      expect(result).toHaveProperty('author', 'https://github.com/shahadathhs');
+      expect(result).toHaveProperty('timestamp');
+      expect(typeof result.timestamp).toBe('string');
     });
   });
 });
