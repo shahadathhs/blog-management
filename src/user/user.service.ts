@@ -38,8 +38,11 @@ export class UserService {
   }
 
   async remove(id: string): Promise<UserEntity> {
-    const user = await this.prisma.user.delete({
+    const user = await this.prisma.user.update({
       where: { id },
+      data: {
+        isActive: false,
+      },
     });
     return plainToInstance(UserEntity, user);
   }
