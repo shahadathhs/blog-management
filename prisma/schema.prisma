@@ -1,0 +1,216 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// * User model with roles and OAuth support
+model User {
+  id                String    @id @default(uuid())
+  name              String?
+  email             String    @unique
+  password          String? // Nullable for OAuth-only users
+  googleId          String?   @unique
+  roles             Role      @default(USER)
+  emailVerified     Boolean   @default(false)
+  verificationToken String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  isActive          Boolean   @default(true)
+
+  // Relations
+  blogs                  Blog[]
+  comments               Comment[]
+  views                  View[]
+  notifications          Notification[] @relation("NotificationRecipient")
+  triggeredNotifications Notification[] @relation("NotificationActor")
+  profile                Profile? // Optional one-to-one profile
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// * Profile model for extended user information
+model Profile {
+  id       String  @id @default(uuid())
+  userId   String  @unique
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio      String?
+  avatar   String? // URL to avatar image
+  website  String?
+  location String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+// * Blog model with published status and tags
+model Blog {
+  id        String  @id @default(uuid())
+  title     String
+  content   String
+  slug      String  @unique
+  published Boolean @default(false)
+  authorId  String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Relations
+  comments      Comment[]
+  views         View[]
+  tags          BlogTag[] // Many-to-many with tags
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("blogs")
+}
+
+// * Tag model for blog categorization
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  // Relations
+  blogs BlogTag[] // Many-to-many with blogs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tags")
+}
+
+// * Explicit join table for Blog-Tag many-to-many relationship
+model BlogTag {
+  id     String @id @default(uuid())
+  blogId String
+  tagId  String
+
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([blogId, tagId])
+  @@map("blog_tags")
+}
+
+// * Comment model with nested replies support
+model Comment {
+  id       String @id @default(uuid())
+  content  String
+  blogId   String
+  blog     Blog   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Self-referencing for nested comments
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  children Comment[] @relation("CommentReplies")
+
+  // Status fields
+  isEdited Boolean   @default(false)
+  editedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comments")
+}
+
+// * View tracking model
+model View {
+  id        String  @id @default(uuid())
+  userId    String? // Nullable for anonymous views
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blogId    String
+  blog      Blog    @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  ipAddress String? // For anonymous tracking
+  userAgent String? // Browser/device info
+
+  viewedAt DateTime @default(now())
+
+  @@unique([userId, blogId, viewedAt]) // Prevent duplicate views in same timestamp
+  @@map("views")
+}
+
+// * Notification model
+model Notification {
+  id      String           @id @default(uuid())
+  type    NotificationType
+  message String
+  read    Boolean          @default(false)
+
+  // Recipient of the notification
+  recipientId String
+  recipient   User   @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  // Actor who triggered the notification
+  actorId String?
+  actor   User?   @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  // Related entities
+  blogId    String?
+  blog      Blog?   @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  commentId String?
+
+  // Metadata
+  metadata Json? // Additional data as JSON
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@map("notifications")
+}
+
+// Password Reset model for better security
+model PasswordReset {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@map("password_resets")
+}
+
+// Email Verification model
+model EmailVerification {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+
+  createdAt  DateTime  @default(now())
+  verifiedAt DateTime?
+
+  @@map("email_verifications")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum NotificationType {
+  COMMENT
+  REPLY
+  MENTION
+  BLOG_PUBLISHED
+  SYSTEM
+}
