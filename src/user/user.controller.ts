@@ -22,7 +22,10 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({
+    summary: 'Get all users',
+    description: 'Use GET method in `/user` route to get all the users',
+  })
   @Get()
   findAll() {
     return this.userService.findAll();

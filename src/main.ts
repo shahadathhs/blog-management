@@ -1,11 +1,13 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
-  // Swagger config
+  // * Swagger config
   const config = new DocumentBuilder()
     .setTitle('Blog API')
     .setDescription('API docs for your blog backend')
@@ -15,7 +17,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = configService.get<number>('PORT') ?? 3000;
+  await app.listen(port);
 }
 
 void bootstrap();
