@@ -8,8 +8,8 @@ import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
-import { PrismaService } from 'src/common/prisma/prisma.service';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginWithPasswordDto } from './dto/login-with-password.dto';
 import { RegisterWithPasswordDto } from './dto/register-with-password.dto';
 

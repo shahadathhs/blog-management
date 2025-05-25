@@ -1,5 +1,8 @@
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from 'src/common/prisma/prisma.service';
+import { JwtStrategy } from 'src/common/strategy/jwt.strategy';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -7,7 +10,22 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, PrismaService],
+      providers: [
+        AuthService,
+        JwtStrategy,
+        JwtService,
+        PrismaService,
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'JWT_SECRET') return 'test-secret';
+              if (key === 'JWT_EXPIRES_IN') return '3600s';
+              return null;
+            }),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);

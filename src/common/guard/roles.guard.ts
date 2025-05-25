@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
+import { ROLES_KEY } from '../decorator/roles.decorator';
 import { UserEnum } from '../enum/user.enum';
-import { ROLES_KEY } from './roles.decorator';
 
 interface RequestWithUser extends Request {
   user?: {

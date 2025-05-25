@@ -8,10 +8,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/common/decorator/roles.decorator';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
-import { Roles } from 'src/common/roles/roles.decorator';
-import { RolesGuard } from 'src/common/roles/roles.guard';
+import { RolesGuard } from 'src/common/guard/roles.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
