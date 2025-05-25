@@ -14,12 +14,12 @@ export class AuthController {
     description:
       'Use POST method in `/auth/register` route to register a new user with password.',
   })
-  @Post('/register')
+  @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
-  @Get('/verify')
+  @Get('verify')
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
   }
@@ -29,27 +29,27 @@ export class AuthController {
     description:
       'Use POST method in `/auth/login` route to register a new user with password.',
   })
-  @Post('/login')
+  @Post('login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-  @Post('/forgot-password')
+  @Post('forgot-password')
   forgotPassword() {
     return 'Send Reset email';
   }
 
-  @Post('/reset-password')
+  @Post('reset-password')
   resetPassword() {
     return 'set new email';
   }
 
-  @Get('/google')
+  @Get('google')
   google() {
     return 'Test';
   }
 
-  @Get('/google-redirect')
+  @Get('google-redirect')
   googleRedirect() {
     return 'Test';
   }
