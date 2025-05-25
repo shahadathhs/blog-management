@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
@@ -8,12 +14,16 @@ import { RegisterWithPasswordDto } from './dto/register-with-password.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
   async loginWithPassword(
     loginWithPasswordDto: LoginWithPasswordDto,
   ): Promise<{ user: UserEntity; token: string }> {
     const { email, password } = loginWithPasswordDto;
-    console.log(password);
+
     try {
       const user = await this.prisma.user.findUnique({
         where: { email },
@@ -23,11 +33,23 @@ export class AuthService {
         throw new NotFoundException(`User with Email "${email}" not found`);
       }
 
-      const plainUser = plainToInstance(UserEntity, user);
+      if (!user.password) {
+        throw new UnauthorizedException(
+          'User does not password. Try google login',
+        );
+      }
+
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordMatch) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+
+      const token = this.jwtService.sign({ sub: user.id, email: user.email });
 
       return {
-        user: plainUser,
-        token: 'token',
+        user: plainToInstance(UserEntity, user),
+        token,
       };
     } catch (error) {
       console.log('Error fetching user', error);
@@ -39,10 +61,18 @@ export class AuthService {
     registerWithPasswordDto: RegisterWithPasswordDto,
   ): Promise<UserEntity> {
     try {
-      // * TODO: Hash the password before storing
+      const hashedPassword = await bcrypt.hash(
+        registerWithPasswordDto.password,
+        10,
+      );
+
       const user = await this.prisma.user.create({
-        data: registerWithPasswordDto,
+        data: {
+          ...registerWithPasswordDto,
+          password: hashedPassword,
+        },
       });
+
       return plainToInstance(UserEntity, user);
     } catch (error) {
       console.log('Error creating users', error);
