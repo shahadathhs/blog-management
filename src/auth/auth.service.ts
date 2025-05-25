@@ -11,10 +11,10 @@ import { UserEntity } from 'src/common/entity/user.entity';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -53,6 +53,7 @@ export class AuthService {
   }
 
   async verifyEmail(token: string) {
+    if (!token) throw new BadRequestException('Token Not Found');
     const user = await this.prisma.user.findFirst({
       where: { verificationToken: token },
     });

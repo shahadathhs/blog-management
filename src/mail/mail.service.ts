@@ -10,16 +10,20 @@ export class MailService {
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
+      // auth: {
+      //   type: 'OAuth2',
+      //   user: this.configService.get<string>(ENVEnum.MAIL_USER),
+      //   clientId: this.configService.get<string>(ENVEnum.MAIL_CLIENT_ID),
+      //   clientSecret: this.configService.get<string>(
+      //     ENVEnum.MAIL_CLIENT_SECRET,
+      //   ),
+      //   refreshToken: this.configService.get<string>(
+      //     ENVEnum.MAIL_REFRESH_TOKEN,
+      //   ),
+      // },
       auth: {
-        type: 'OAuth2',
         user: this.configService.get<string>(ENVEnum.MAIL_USER),
-        clientId: this.configService.get<string>(ENVEnum.MAIL_CLIENT_ID),
-        clientSecret: this.configService.get<string>(
-          ENVEnum.MAIL_CLIENT_SECRET,
-        ),
-        refreshToken: this.configService.get<string>(
-          ENVEnum.MAIL_REFRESH_TOKEN,
-        ),
+        pass: this.configService.get<string>(ENVEnum.MAIL_APP_PASSWORD),
       },
     });
   }
