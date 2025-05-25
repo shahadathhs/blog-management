@@ -10,6 +10,21 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({
+    summary: 'Register user with password',
+    description:
+      'Use POST method in `/auth/register` route to register a new user with password.',
+  })
+  @Post('/register')
+  register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
+  @Post('/verify') // * token as query
+  verify() {
+    return 'This route verify email on registration. a email will be sent with a token to user email & that token will be used in this route as query `/auth/verify?token=THE_TOKEN`';
+  }
+
+  @ApiOperation({
     summary: 'Login user with password',
     description:
       'Use POST method in `/auth/login` route to register a new user with password.',
@@ -19,13 +34,23 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @ApiOperation({
-    summary: 'Register user with password',
-    description:
-      'Use POST method in `/auth/register` route to register a new user with password.',
-  })
-  @Post('/register')
-  register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @Post('/forgot-password')
+  forgotPassword() {
+    return 'Send Reset email';
+  }
+
+  @Post('/reset-password')
+  resetPassword() {
+    return 'set new email';
+  }
+
+  @Get('/google')
+  google() {
+    return 'Test';
+  }
+
+  @Get('/google-redirect')
+  googleRedirect() {
+    return 'Test';
   }
 }
