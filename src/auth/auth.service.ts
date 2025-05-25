@@ -1,20 +1,21 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { HandleErrors } from 'src/common/decorator/handle-errors.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
-import { handlePrismaError } from 'src/common/utils/prisma-error.util';
+import {
+  AppError,
+  ErrorCode,
+  ErrorMessages,
+} from 'src/common/utils/error-handler.util';
 import {
   successResponse,
   TSuccessResponse,
-} from 'src/common/utils/success-response.utils';
+} from 'src/common/utils/response.util';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -25,88 +26,62 @@ import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly RESET_TOKEN_EXPIRY_MINUTES = 15;
+  private readonly BCRYPT_ROUNDS = 10;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private mailService: MailService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<TSuccessResponse> {
-    try {
-      const hashedPassword = await bcrypt.hash(dto.password, 10);
-      const payload: JWTPayload = {
-        sub: crypto.randomUUID(),
-        email: dto.email,
-        roles: UserEnum.User,
-      };
-      const verificationToken = this.jwtService.sign(payload);
-      const user = await this.prisma.user.create({
-        data: {
-          ...dto,
-          verificationToken,
-          password: hashedPassword,
-        },
-      });
+  @HandleErrors('Failed to register user')
+  async register(dto: RegisterDto): Promise<TSuccessResponse<UserEntity>> {
+    const hashedPassword = await this.hashPassword(dto.password);
+    const verificationToken = this.generateVerificationToken(dto.email);
 
-      await this.mailService.sendVerificationEmail(
-        dto.email,
+    const user = await this.prisma.user.create({
+      data: {
+        ...dto,
+        password: hashedPassword,
         verificationToken,
-      );
+      },
+    });
 
-      return successResponse(
-        plainToInstance(UserEntity, user),
-        'User registered',
-      );
-    } catch (error) {
-      handlePrismaError(error, 'Failed to register user', 'User');
-    }
+    await this.mailService.sendVerificationEmail(dto.email, verificationToken);
+
+    return successResponse(
+      plainToInstance(UserEntity, user),
+      'User registered successfully',
+    );
   }
 
-  async verifyEmail(token: string) {
-    try {
-      if (!token) throw new BadRequestException('Token Not Found');
-      const user = await this.prisma.user.findFirst({
-        where: { verificationToken: token },
-      });
-      if (!user) throw new BadRequestException('Invalid token');
+  @HandleErrors('Failed to verify email')
+  async verifyEmail(token: string): Promise<TSuccessResponse<null>> {
+    this.validateToken(token);
 
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true, verificationToken: null },
-      });
+    const user = await this.findUserByVerificationToken(token);
 
-      return successResponse(null, 'Email verified successfully');
-    } catch (error) {
-      handlePrismaError(error, 'Error verifying the email', 'User');
-    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        verificationToken: null,
+      },
+    });
+
+    return successResponse(null, 'Email verified successfully');
   }
 
-  async login(dto: LoginDto): Promise<TSuccessResponse> {
-    const { email, password } = dto;
+  @HandleErrors('Failed to login')
+  async login(
+    dto: LoginDto,
+  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+    const user = await this.findUserByEmail(dto.email);
+    this.validateUserForLogin(user, dto.email);
+    await this.validatePassword(dto.password, user.password as string);
 
-    const user = await this.prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      throw new NotFoundException(`User with email "${email}" not found`);
-    }
-
-    if (!user.password) {
-      throw new NotFoundException(
-        `User with email "${email}" doesn't have password. Try google login`,
-      );
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const payload: JWTPayload = {
-      sub: user.id,
-      email: user.email,
-      roles: user.roles,
-    };
-    const token = this.jwtService.sign(payload);
+    const token = this.generateAuthToken(user);
 
     return successResponse(
       {
@@ -117,22 +92,14 @@ export class AuthService {
     );
   }
 
-  async forgotPassword(dto: ForgotPasswordDto): Promise<TSuccessResponse> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+  @HandleErrors('Failed to process forgot password request')
+  async forgotPassword(
+    dto: ForgotPasswordDto,
+  ): Promise<TSuccessResponse<null>> {
+    const user = await this.findUserByEmail(dto.email);
 
-    if (!user) {
-      throw new NotFoundException('User Not found');
-    }
-
-    const payload: JWTPayload = {
-      sub: user.id,
-      email: user.email,
-      roles: user.roles,
-    };
-    const resetToken = this.jwtService.sign(payload);
-    const expiry = new Date(Date.now() + 15 * 60 * 1000); // * 15 mins
+    const resetToken = this.generateAuthToken(user);
+    const expiry = this.getResetTokenExpiry();
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -144,25 +111,18 @@ export class AuthService {
 
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
 
-    return successResponse(null, 'Reset link was sent to the email.');
+    return successResponse(null, 'Reset link was sent to your email');
   }
 
-  async setNewPassword(dto: SetNewPasswordDto): Promise<TSuccessResponse> {
-    if (!dto.token) {
-      throw new NotFoundException('Token Not found');
-    }
-    const user = await this.prisma.user.findFirst({
-      where: {
-        resetToken: dto.token,
-        resetTokenExpiry: { gt: new Date() },
-      },
-    });
+  @HandleErrors('Failed to set new password')
+  async setNewPassword(
+    dto: SetNewPasswordDto,
+  ): Promise<TSuccessResponse<null>> {
+    this.validateToken(dto.token);
 
-    if (!user) {
-      throw new BadRequestException('Invalid or expired token');
-    }
+    const user = await this.findUserByResetToken(dto.token);
 
-    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+    const hashedPassword = await this.hashPassword(dto.newPassword);
 
     await this.prisma.user.update({
       where: { id: user.id },
@@ -176,41 +136,143 @@ export class AuthService {
     return successResponse(null, 'Password updated successfully');
   }
 
-  async resetPassword(dto: ResetPasswordDto): Promise<TSuccessResponse> {
-    const { email, currentPassword, newPassword } = dto;
+  @HandleErrors('Failed to reset password')
+  async resetPassword(dto: ResetPasswordDto): Promise<TSuccessResponse<null>> {
+    const user = await this.findUserByEmail(dto.email);
+    this.validateUserHasPassword(user, dto.email);
+    await this.validatePassword(dto.currentPassword, user.password as string);
+    this.validatePasswordChange(dto.currentPassword, dto.newPassword);
 
-    const user = await this.prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      throw new NotFoundException(`User with email "${email}" not found`);
-    }
-
-    if (!user.password) {
-      throw new BadRequestException(
-        `User with email "${email}" has no password. Try Google login.`,
-      );
-    }
-
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Current password is incorrect');
-    }
-
-    if (currentPassword === newPassword) {
-      throw new BadRequestException(
-        'New password must be different from the current password',
-      );
-    }
-
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await this.hashPassword(dto.newPassword);
 
     await this.prisma.user.update({
-      where: { email },
-      data: {
-        password: hashedNewPassword,
-      },
+      where: { email: dto.email },
+      data: { password: hashedNewPassword },
     });
 
     return successResponse(null, 'Password updated successfully');
+  }
+
+  // * private helper
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, this.BCRYPT_ROUNDS);
+  }
+
+  private generateVerificationToken(email: string): string {
+    const payload: JWTPayload = {
+      sub: crypto.randomUUID(),
+      email,
+      roles: UserEnum.User,
+    };
+    return this.jwtService.sign(payload);
+  }
+
+  private generateAuthToken(user: User): string {
+    const payload: JWTPayload = {
+      sub: user.id,
+      email: user.email,
+      roles: user.roles,
+    };
+    return this.jwtService.sign(payload);
+  }
+
+  private getResetTokenExpiry(): Date {
+    return new Date(Date.now() + this.RESET_TOKEN_EXPIRY_MINUTES * 60 * 1000);
+  }
+
+  private validateToken(token: string): void {
+    if (!token) {
+      throw new AppError(ErrorCode.INVALID_TOKEN, 'Token not found', 400);
+    }
+  }
+
+  private async findUserByEmail(email: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new AppError(
+        ErrorCode.USER_NOT_FOUND,
+        ErrorMessages[ErrorCode.USER_NOT_FOUND](email),
+        404,
+      );
+    }
+    return user;
+  }
+
+  private async findUserByVerificationToken(token: string): Promise<User> {
+    const user = await this.prisma.user.findFirst({
+      where: { verificationToken: token },
+    });
+    if (!user) {
+      throw new AppError(
+        ErrorCode.USER_NOT_FOUND,
+        ErrorMessages[ErrorCode.USER_NOT_FOUND](),
+        404,
+      );
+    }
+    return user;
+  }
+
+  private async findUserByResetToken(token: string): Promise<User> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: token,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+    if (!user) {
+      throw new AppError(
+        ErrorCode.USER_NOT_FOUND,
+        ErrorMessages[ErrorCode.USER_NOT_FOUND](),
+        404,
+      );
+    }
+    return user;
+  }
+
+  private validateUserForLogin(user: User, email: string): void {
+    if (!user.password) {
+      throw new AppError(
+        ErrorCode.PASSWORD_REQUIRED,
+        ErrorMessages[ErrorCode.PASSWORD_REQUIRED](email),
+        400,
+      );
+    }
+  }
+
+  private validateUserHasPassword(user: User, email: string): void {
+    if (!user.password) {
+      throw new AppError(
+        ErrorCode.PASSWORD_REQUIRED,
+        ErrorMessages[ErrorCode.PASSWORD_REQUIRED](email),
+        400,
+      );
+    }
+  }
+
+  private async validatePassword(
+    inputPassword: string,
+    storedPassword: string,
+  ): Promise<void> {
+    const isMatch = await bcrypt.compare(inputPassword, storedPassword);
+    if (!isMatch) {
+      throw new AppError(
+        ErrorCode.INVALID_CREDENTIALS,
+        ErrorMessages[ErrorCode.INVALID_CREDENTIALS](),
+        401,
+      );
+    }
+  }
+
+  private validatePasswordChange(
+    currentPassword: string,
+    newPassword: string,
+  ): void {
+    if (currentPassword === newPassword) {
+      throw new AppError(
+        ErrorCode.SAME_PASSWORD,
+        ErrorMessages[ErrorCode.SAME_PASSWORD](),
+        400,
+      );
+    }
   }
 }

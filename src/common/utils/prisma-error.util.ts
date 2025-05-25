@@ -1,9 +1,12 @@
 import {
+  BadRequestException,
   ConflictException,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { AppError } from './error-handler.util';
 
 export function handlePrismaError(
   error: unknown,
@@ -16,6 +19,21 @@ export function handlePrismaError(
         throw new ConflictException(`${record} already exists`);
       case 'P2025':
         throw new NotFoundException(`${record} not found`);
+    }
+  }
+
+  if (error instanceof AppError) {
+    switch (error.statusCode) {
+      case 400:
+        throw new BadRequestException(error.message);
+      case 401:
+        throw new UnauthorizedException(error.message);
+      case 404:
+        throw new NotFoundException(error.message);
+      case 409:
+        throw new ConflictException(error.message);
+      default:
+        throw new InternalServerErrorException(error.message);
     }
   }
 
