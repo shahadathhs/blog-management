@@ -14,12 +14,14 @@ import { handlePrismaError } from 'src/common/utils/prisma-error.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto): Promise<UserEntity> {
@@ -39,7 +41,10 @@ export class AuthService {
         },
       });
 
-      // * send the verificationToken to user email using node mailer
+      await this.mailService.sendVerificationEmail(
+        dto.email,
+        verificationToken,
+      );
 
       return plainToInstance(UserEntity, user);
     } catch (error) {
