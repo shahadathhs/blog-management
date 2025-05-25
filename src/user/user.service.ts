@@ -3,7 +3,6 @@ import { plainToInstance } from 'class-transformer';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -36,23 +35,9 @@ export class UserService {
     }
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
-    try {
-      await this.findOne(id); // optional: ensure user exists
-      const user = await this.prisma.user.update({
-        where: { id },
-        data: updateUserDto,
-      });
-      return plainToInstance(UserEntity, user);
-    } catch (error) {
-      console.error('Error updating user', error);
-      handlePrismaError(error, 'Failed to update user', 'User');
-    }
-  }
-
   async remove(id: string): Promise<UserEntity> {
     try {
-      await this.findOne(id); // ensure user exists
+      await this.findOne(id); // * ensure user exists
       const user = await this.prisma.user.update({
         where: { id },
         data: { isActive: false },

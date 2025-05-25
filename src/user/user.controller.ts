@@ -1,18 +1,9 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
 @ApiTags('user')
@@ -22,7 +13,8 @@ export class UserController {
 
   @ApiOperation({
     summary: 'Get all users',
-    description: 'Use GET method in `/user` route to get all the users.',
+    description:
+      'Use GET method on `/user` to retrieve a list of all users. Accessible only to Admin users.',
   })
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -31,17 +23,26 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @ApiOperation({
+    summary: 'Get a specific user by ID',
+    description:
+      'Use GET method on `/user/:id` to retrieve a single user by their ID. Accessible to Admins, Moderators, and Users.',
+  })
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
-  }
-
+  @ApiOperation({
+    summary: 'Soft delete a user by ID',
+    description:
+      'Use DELETE method on `/user/:id` to **soft delete** a user by setting `isActive` to `false` instead of permanently removing them from the database. Only Admins can perform this action.',
+  })
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.Admin)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
