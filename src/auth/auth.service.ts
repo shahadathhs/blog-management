@@ -13,9 +13,11 @@ import { JWTPayload } from 'src/common/interface/jwt.interface';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -101,7 +103,64 @@ export class AuthService {
     };
   }
 
-  async forgotPassword() {}
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User Not found');
+    }
+
+    const payload: JWTPayload = {
+      sub: user.id,
+      email: user.email,
+      roles: user.roles,
+    };
+    const resetToken = this.jwtService.sign(payload);
+    const expiry = new Date(Date.now() + 15 * 60 * 1000); // * 15 mins
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken,
+        resetTokenExpiry: expiry,
+      },
+    });
+
+    await this.mailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return { message: 'Reset link was sent to the email.' };
+  }
+
+  async setNewPassword(dto: SetNewPasswordDto): Promise<{ message: string }> {
+    if (!dto.token) {
+      throw new NotFoundException('Token Not found');
+    }
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: dto.token,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired token');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return { message: 'Password updated successfully' };
+  }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
     const { email, currentPassword, newPassword } = dto;

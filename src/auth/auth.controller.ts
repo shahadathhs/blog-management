@@ -5,9 +5,11 @@ import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
 import { AuthService } from './auth.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SetNewPasswordDto } from './dto/set-new-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -40,8 +42,13 @@ export class AuthController {
   }
 
   @Post('forgot-password')
-  forgotPassword() {
-    return this.authService.forgotPassword();
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('new-password')
+  newPassword(@Body() dto: SetNewPasswordDto) {
+    return this.authService.setNewPassword(dto);
   }
 
   @Post('reset-password')

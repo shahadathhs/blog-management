@@ -32,16 +32,36 @@ export class MailService {
     email: string,
     token: string,
   ): Promise<nodemailer.SentMessageInfo> {
-    const verificationLink = `http://localhost:3000/auth/verify-email?token=${token}`;
+    const verificationLink = `${this.configService.get<string>(ENVEnum.FRONTEND_EMAIL_VERIFY_URL)}?token=${token}`;
 
     const mailOptions = {
-      from: `"No Reply" <${process.env.MAIL_USER}>`,
+      from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
       to: email,
       subject: 'Email Verification',
       html: `
         <h3>Welcome!</h3>
         <p>Please verify your email by clicking the link below:</p>
         <a href="${verificationLink}">Verify Email</a>
+      `,
+    };
+
+    return this.transporter.sendMail(mailOptions);
+  }
+
+  async sendPasswordResetEmail(
+    email: string,
+    token: string,
+  ): Promise<nodemailer.SentMessageInfo> {
+    const resetLink = `${this.configService.get<string>(ENVEnum.FRONTEND_PASSWORD_RESET_URL)}?token=${token}`;
+
+    const mailOptions = {
+      from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
+      to: email,
+      subject: 'Password Reset',
+      html: `
+        <h3>Welcome!</h3>
+        <p>Please reset your password by visiting the link below:</p>
+        <a href="${resetLink}">Reset password</a>
       `,
     };
 
