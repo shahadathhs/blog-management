@@ -10,8 +10,8 @@ import { UserEntity } from 'src/common/entity/user.entity';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { LoginWithPasswordDto } from './dto/login-with-password.dto';
-import { RegisterWithPasswordDto } from './dto/register-with-password.dto';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,9 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async loginWithPassword(
-    dto: LoginWithPasswordDto,
-  ): Promise<{ user: UserEntity; token: string }> {
+  async login(dto: LoginDto): Promise<{ user: UserEntity; token: string }> {
     const { email, password } = dto;
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -55,9 +53,7 @@ export class AuthService {
     };
   }
 
-  async registerWithPassword(
-    dto: RegisterWithPasswordDto,
-  ): Promise<UserEntity> {
+  async register(dto: RegisterDto): Promise<UserEntity> {
     try {
       const hashedPassword = await bcrypt.hash(dto.password, 10);
       const user = await this.prisma.user.create({
