@@ -11,6 +11,10 @@ import { UserEntity } from 'src/common/entity/user.entity';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
+import {
+  successResponse,
+  TSuccessResponse,
+} from 'src/common/utils/success-response.utils';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -27,7 +31,7 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  async register(dto: RegisterDto): Promise<UserEntity> {
+  async register(dto: RegisterDto): Promise<TSuccessResponse> {
     try {
       const hashedPassword = await bcrypt.hash(dto.password, 10);
       const payload: JWTPayload = {
@@ -49,28 +53,35 @@ export class AuthService {
         verificationToken,
       );
 
-      return plainToInstance(UserEntity, user);
+      return successResponse(
+        plainToInstance(UserEntity, user),
+        'User registered',
+      );
     } catch (error) {
       handlePrismaError(error, 'Failed to register user', 'User');
     }
   }
 
   async verifyEmail(token: string) {
-    if (!token) throw new BadRequestException('Token Not Found');
-    const user = await this.prisma.user.findFirst({
-      where: { verificationToken: token },
-    });
-    if (!user) throw new BadRequestException('Invalid token');
+    try {
+      if (!token) throw new BadRequestException('Token Not Found');
+      const user = await this.prisma.user.findFirst({
+        where: { verificationToken: token },
+      });
+      if (!user) throw new BadRequestException('Invalid token');
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { emailVerified: true, verificationToken: null },
-    });
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true, verificationToken: null },
+      });
 
-    return { message: 'Email verified successfully' };
+      return successResponse(null, 'Email verified successfully');
+    } catch (error) {
+      handlePrismaError(error, 'Error verifying the email', 'User');
+    }
   }
 
-  async login(dto: LoginDto): Promise<{ user: UserEntity; token: string }> {
+  async login(dto: LoginDto): Promise<TSuccessResponse> {
     const { email, password } = dto;
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -97,13 +108,16 @@ export class AuthService {
     };
     const token = this.jwtService.sign(payload);
 
-    return {
-      user: plainToInstance(UserEntity, user),
-      token,
-    };
+    return successResponse(
+      {
+        user: plainToInstance(UserEntity, user),
+        token,
+      },
+      'Login successful',
+    );
   }
 
-  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+  async forgotPassword(dto: ForgotPasswordDto): Promise<TSuccessResponse> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -130,10 +144,10 @@ export class AuthService {
 
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
 
-    return { message: 'Reset link was sent to the email.' };
+    return successResponse(null, 'Reset link was sent to the email.');
   }
 
-  async setNewPassword(dto: SetNewPasswordDto): Promise<{ message: string }> {
+  async setNewPassword(dto: SetNewPasswordDto): Promise<TSuccessResponse> {
     if (!dto.token) {
       throw new NotFoundException('Token Not found');
     }
@@ -159,10 +173,10 @@ export class AuthService {
       },
     });
 
-    return { message: 'Password updated successfully' };
+    return successResponse(null, 'Password updated successfully');
   }
 
-  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+  async resetPassword(dto: ResetPasswordDto): Promise<TSuccessResponse> {
     const { email, currentPassword, newPassword } = dto;
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -197,6 +211,6 @@ export class AuthService {
       },
     });
 
-    return { message: 'Password updated successfully' };
+    return successResponse(null, 'Password updated successfully');
   }
 }
