@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -19,9 +19,9 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  @Post('/verify') // * token as query
-  verify() {
-    return 'This route verify email on registration. a email will be sent with a token to user email & that token will be used in this route as query `/auth/verify?token=THE_TOKEN`';
+  @Get('/verify')
+  async verifyEmail(@Query('token') token: string) {
+    return this.authService.verifyEmail(token);
   }
 
   @ApiOperation({
@@ -29,7 +29,7 @@ export class AuthController {
     description:
       'Use POST method in `/auth/login` route to register a new user with password.',
   })
-  @Get('/login')
+  @Post('/login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
