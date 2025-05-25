@@ -1,8 +1,13 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Roles } from 'src/common/decorator/roles.decorator';
+import { UserEnum } from 'src/common/enum/user.enum';
+import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guard/roles.guard';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,12 +41,14 @@ export class AuthController {
 
   @Post('forgot-password')
   forgotPassword() {
-    return 'Send Reset email';
+    return this.authService.forgotPassword();
   }
 
   @Post('reset-password')
-  resetPassword() {
-    return 'set new email';
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @Get('google')

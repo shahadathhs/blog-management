@@ -15,6 +15,7 @@ import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -98,5 +99,45 @@ export class AuthService {
       user: plainToInstance(UserEntity, user),
       token,
     };
+  }
+
+  async forgotPassword() {}
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const { email, currentPassword, newPassword } = dto;
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new NotFoundException(`User with email "${email}" not found`);
+    }
+
+    if (!user.password) {
+      throw new BadRequestException(
+        `User with email "${email}" has no password. Try Google login.`,
+      );
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException(
+        'New password must be different from the current password',
+      );
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    return { message: 'Password updated successfully' };
   }
 }
