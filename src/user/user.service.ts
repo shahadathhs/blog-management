@@ -1,26 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { UserEntity } from 'src/common/entity/user.entity';
 import { handlePrismaError } from 'src/common/utils/prisma-error.util';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async create(createUserDto: CreateUserDto): Promise<UserEntity> {
-    try {
-      const user = await this.prisma.user.create({
-        data: createUserDto,
-      });
-      return plainToInstance(UserEntity, user);
-    } catch (error) {
-      console.log('Error creating users', error);
-      handlePrismaError(error, 'Failed to create user', 'User');
-    }
-  }
 
   async findAll(): Promise<UserEntity[]> {
     try {
