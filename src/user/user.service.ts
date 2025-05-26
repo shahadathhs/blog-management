@@ -48,4 +48,24 @@ export class UserService {
       handlePrismaError(error, 'Failed to delete user', 'User');
     }
   }
+
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+        blogs: true,
+        notifications: true,
+        triggeredNotifications: true,
+        views: true,
+        comments: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return plainToInstance(UserEntity, user);
+  }
 }

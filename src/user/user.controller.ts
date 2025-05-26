@@ -5,6 +5,7 @@ import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
 import { UserService } from './user.service';
+import { GetUser } from 'src/common/decorator/get-user.decorator';
 
 @ApiTags('user')
 @Controller('user')
@@ -23,14 +24,21 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
+  getProfile(@GetUser('userId') userId: string) {
+    return this.userService.getProfile(userId);
+  }
+
   @ApiOperation({
     summary: 'Get a specific user by ID',
     description:
-      'Use GET method on `/user/:id` to retrieve a single user by their ID. Accessible to Admins, Moderators, and Users.',
+      'Use GET method on `/user/:id` to retrieve a single user by their ID. Accessible to Admins.',
   })
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
+  @Roles(UserEnum.Admin)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
