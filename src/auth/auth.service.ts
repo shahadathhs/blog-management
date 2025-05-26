@@ -56,6 +56,14 @@ export class AuthService {
         ...dto,
         password: hashedPassword,
         verificationToken,
+        profile: {
+          create: {
+            bio: '',
+            avatar: null,
+            website: '',
+            location: '',
+          },
+        },
       },
     });
 
@@ -185,6 +193,14 @@ export class AuthService {
           name: payload.name ?? 'Unnamed Google User',
           googleId: payload.sub,
           emailVerified: true,
+          profile: {
+            create: {
+              bio: '',
+              avatar: payload.picture,
+              website: '',
+              location: '',
+            },
+          },
         },
       });
     } else if (!user.googleId) {
@@ -195,6 +211,7 @@ export class AuthService {
           googleId: payload.sub,
           emailVerified: true,
         },
+        include: { profile: true },
       });
     }
 
@@ -243,7 +260,10 @@ export class AuthService {
   }
 
   private async findUserByEmail(email: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
     if (!user) {
       throw new AppError(
         ErrorCode.USER_NOT_FOUND,
@@ -257,6 +277,7 @@ export class AuthService {
   private async findUserByVerificationToken(token: string): Promise<User> {
     const user = await this.prisma.user.findFirst({
       where: { verificationToken: token },
+      include: { profile: true },
     });
     if (!user) {
       throw new AppError(
@@ -274,6 +295,7 @@ export class AuthService {
         resetToken: token,
         resetTokenExpiry: { gt: new Date() },
       },
+      include: { profile: true },
     });
     if (!user) {
       throw new AppError(
