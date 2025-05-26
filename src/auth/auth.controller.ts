@@ -92,7 +92,43 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
-  @ApiOperation({ summary: 'Login/Register using Google OAuth' })
+  @ApiOperation({
+    summary: 'Login/Register using Google OAuth',
+    description: `Accepts a Google ID token and either logs in an existing user or registers a new user if not found.
+
+**Client Responsibility**: 
+Obtain a Google ID token from frontend via Google Sign-In (e.g., @react-oauth/google) and pass it to this endpoint.
+
+**Response**: 
+Returns the authenticated user and JWT token.`,
+  })
+  @ApiBody({
+    type: GoogleLoginDto,
+    description: `Google ID token payload from frontend.
+
+Example:
+{
+  "token": "eyJhbGciOiJSUzI1..."
+}`,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully logged in or registered with Google',
+    example: {
+      success: true,
+      message: 'Google login successful',
+      data: {
+        user: {
+          id: 'a1b2c3d4-5678',
+          name: 'John Doe',
+          email: 'john.doe@gmail.com',
+          roles: 'USER',
+          emailVerified: true,
+        },
+        token: 'jwt.token.here',
+      },
+    },
+  })
   @Post('google')
   googleLogin(@Body() dto: GoogleLoginDto) {
     return this.authService.googleLogin(dto);

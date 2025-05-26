@@ -6,6 +6,7 @@ export enum ErrorCode {
   PASSWORD_REQUIRED = 'PASSWORD_REQUIRED',
   SAME_PASSWORD = 'SAME_PASSWORD',
   EMAIL_NOT_VERIFIED = 'EMAIL_NOT_VERIFIED',
+  GOOGLE_MISSING_REQUIRED_FIELDS = 'GOOGLE_MISSING_REQUIRED_FIELDS',
 }
 
 export class AppError extends Error {
@@ -30,4 +31,6 @@ export const ErrorMessages = {
   [ErrorCode.SAME_PASSWORD]: () =>
     'New password must be different from the current password',
   [ErrorCode.EMAIL_NOT_VERIFIED]: () => 'Email address is not verified',
+  [ErrorCode.GOOGLE_MISSING_REQUIRED_FIELDS]: () =>
+    'Google account missing required fields',
 };

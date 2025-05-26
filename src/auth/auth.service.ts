@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
@@ -344,14 +340,24 @@ export class AuthService {
 
     const payload = ticket.getPayload();
 
-    // if (!payload) throw new UnauthorizedException('Invalid Google payload');
+    if (!payload) {
+      throw new AppError(
+        ErrorCode.INVALID_TOKEN,
+        ErrorMessages[ErrorCode.INVALID_TOKEN](),
+        400,
+      );
+    }
 
-    // const { sub: googleId, email, name } = payload;
+    const { sub, email } = payload;
 
-    // if (!email || !googleId || !name) {
-    //   throw new BadRequestException('Google account missing required fields');
-    // }
+    if (!email || !sub) {
+      throw new AppError(
+        ErrorCode.INVALID_TOKEN,
+        ErrorMessages[ErrorCode.INVALID_TOKEN](),
+        400,
+      );
+    }
 
-    return payload as TokenPayload;
+    return payload;
   }
 }
