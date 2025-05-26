@@ -7,9 +7,17 @@ import {
   Patch,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { Roles } from 'src/common/decorator/roles.decorator';
+import { UserEntity } from 'src/common/entity/user.entity';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
@@ -24,8 +32,14 @@ export class UserController {
   @ApiOperation({
     summary: 'Get all users',
     description:
-      'Use GET method on `/user` to retrieve a list of all users. Accessible only to Admin users.',
+      'Retrieve a list of all users. Accessible only to Admin users.',
   })
+  @ApiOkResponse({
+    description: 'Users retrieved successfully',
+    type: [UserEntity],
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
@@ -33,6 +47,17 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @ApiOperation({
+    summary: 'Get logged-in user profile',
+    description:
+      'Retrieve the profile of the currently authenticated user. Accessible to all authenticated roles.',
+  })
+  @ApiOkResponse({
+    description: 'User profile retrieved successfully',
+    type: UserEntity,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   @Get('me')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
@@ -40,6 +65,17 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
+  @ApiOperation({
+    summary: 'Update profile of logged-in user',
+    description: 'Allows logged-in user to update their own profile.',
+  })
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiOkResponse({
+    description: 'Profile updated successfully',
+    type: UserEntity,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   @Patch('profile')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
@@ -53,8 +89,14 @@ export class UserController {
   @ApiOperation({
     summary: 'Get a specific user by ID',
     description:
-      'Use GET method on `/user/:id` to retrieve a single user by their ID. Accessible to Admins.',
+      'Retrieve a single user by their ID. Accessible only to Admins.',
   })
+  @ApiOkResponse({
+    description: 'User retrieved successfully',
+    type: UserEntity,
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
@@ -65,8 +107,11 @@ export class UserController {
   @ApiOperation({
     summary: 'Soft delete a user by ID',
     description:
-      'Use DELETE method on `/user/:id` to **soft delete** a user by setting `isActive` to `false` instead of permanently removing them from the database. Only Admins can perform this action.',
+      'Soft delete a user by setting `isActive` to `false`. This action is only permitted for Admins.',
   })
+  @ApiOkResponse({ description: 'User removed successfully', type: UserEntity })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
