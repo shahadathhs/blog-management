@@ -1,11 +1,20 @@
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { Roles } from 'src/common/decorator/roles.decorator';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserService } from './user.service';
-import { GetUser } from 'src/common/decorator/get-user.decorator';
 
 @ApiTags('user')
 @Controller('user')
@@ -29,6 +38,16 @@ export class UserController {
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
   getProfile(@GetUser('userId') userId: string) {
     return this.userService.getProfile(userId);
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
+  updateProfile(
+    @GetUser('userId') userId: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.userService.updateProfile(userId, dto);
   }
 
   @ApiOperation({

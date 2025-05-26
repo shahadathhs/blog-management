@@ -7,6 +7,7 @@ import {
   TSuccessResponse,
 } from 'src/common/utils/response.util';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -64,6 +65,31 @@ export class UserService {
     return successResponse(
       plainToInstance(UserEntity, user),
       'User profile retrieve successfully',
+    );
+  }
+
+  @HandleErrors('Failed to update profile')
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<TSuccessResponse<UserEntity>> {
+    const { name, ...profileData } = dto;
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(name && { name }),
+        profile: {
+          update: profileData,
+        },
+      },
+      include: {
+        profile: true,
+      },
+    });
+
+    return successResponse(
+      plainToInstance(UserEntity, user),
+      'Profile updated successfully',
     );
   }
 }
