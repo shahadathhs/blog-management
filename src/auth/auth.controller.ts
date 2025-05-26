@@ -12,6 +12,7 @@ import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guard/roles.guard';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -91,15 +92,9 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
-  @Get('google')
-  @ApiOperation({ summary: 'Google OAuth test route' })
-  google() {
-    return 'Test';
-  }
-
-  @Get('google-redirect')
-  @ApiOperation({ summary: 'Google OAuth redirect route' })
-  googleRedirect() {
-    return 'Test';
+  @ApiOperation({ summary: 'Login/Register using Google OAuth' })
+  @Post('google')
+  googleLogin(@Body() dto: GoogleLoginDto) {
+    return this.authService.googleLogin(dto);
   }
 }

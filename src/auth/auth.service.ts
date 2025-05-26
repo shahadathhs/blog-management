@@ -1,10 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { HandleErrors } from 'src/common/decorator/handle-errors.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
+import { ENVEnum } from 'src/common/enum/env.enum';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { JWTPayload } from 'src/common/interface/jwt.interface';
 import {
@@ -19,6 +26,7 @@ import {
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -29,11 +37,18 @@ export class AuthService {
   private readonly RESET_TOKEN_EXPIRY_MINUTES = 15;
   private readonly BCRYPT_ROUNDS = 10;
 
+  private googleClient: OAuth2Client;
+
   constructor(
+    private configService: ConfigService,
     private prisma: PrismaService,
     private jwtService: JwtService,
     private mailService: MailService,
-  ) {}
+  ) {
+    this.googleClient = new OAuth2Client(
+      this.configService.get<string>(ENVEnum.GOOGLE_CLIENT_ID),
+    );
+  }
 
   @HandleErrors('Failed to register user')
   async register(dto: RegisterDto): Promise<TSuccessResponse<UserEntity>> {
@@ -151,6 +166,51 @@ export class AuthService {
     });
 
     return successResponse(null, 'Password updated successfully');
+  }
+
+  @HandleErrors('Failed to login with google')
+  async googleLogin(
+    dto: GoogleLoginDto,
+  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+    this.validateToken(dto.token);
+
+    const payload = await this.verifyGoogleToken(dto.token);
+
+    // * Check if user already exists
+    let user = await this.prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    if (!user) {
+      // * Create new user
+      user = await this.prisma.user.create({
+        data: {
+          email: payload.email as string,
+          name: payload.name ?? 'Unnamed Google User',
+          googleId: payload.sub,
+          emailVerified: true,
+        },
+      });
+    } else if (!user.googleId) {
+      // * Link Google account to existing user
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: payload.sub,
+          emailVerified: true,
+        },
+      });
+    }
+
+    const token = this.generateAuthToken(user);
+
+    return successResponse(
+      {
+        user: plainToInstance(UserEntity, user),
+        token,
+      },
+      'Google login successful',
+    );
   }
 
   // * private helper
@@ -274,5 +334,24 @@ export class AuthService {
         400,
       );
     }
+  }
+
+  private async verifyGoogleToken(token: string): Promise<TokenPayload> {
+    const ticket = await this.googleClient.verifyIdToken({
+      idToken: token,
+      audience: this.configService.get<string>(ENVEnum.GOOGLE_CLIENT_ID),
+    });
+
+    const payload = ticket.getPayload();
+
+    // if (!payload) throw new UnauthorizedException('Invalid Google payload');
+
+    // const { sub: googleId, email, name } = payload;
+
+    // if (!email || !googleId || !name) {
+    //   throw new BadRequestException('Google account missing required fields');
+    // }
+
+    return payload as TokenPayload;
   }
 }
