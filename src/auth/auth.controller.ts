@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiQuery,
@@ -29,6 +30,7 @@ export class AuthController {
   })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({ status: 400, description: 'Validation error or email exists' })
   @Post('register')
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -40,6 +42,7 @@ export class AuthController {
   })
   @ApiQuery({ name: 'token', required: true })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @Get('verify')
   async verifyEmail(@Query('token') token: string) {
     return this.authService.verifyEmail(token);
@@ -51,6 +54,7 @@ export class AuthController {
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'User logged in successfully' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
@@ -62,6 +66,7 @@ export class AuthController {
   })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({ status: 200, description: 'Reset link sent successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
@@ -73,6 +78,7 @@ export class AuthController {
   })
   @ApiBody({ type: SetNewPasswordDto })
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   @Post('new-password')
   newPassword(@Body() dto: SetNewPasswordDto) {
     return this.authService.setNewPassword(dto);
@@ -83,8 +89,10 @@ export class AuthController {
     description:
       'Allows logged-in user to reset password by providing current password.',
   })
+  @ApiBearerAuth()
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({ status: 200, description: 'Password updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
   @Post('reset-password')
@@ -114,21 +122,24 @@ Example:
   @ApiResponse({
     status: 201,
     description: 'User successfully logged in or registered with Google',
-    example: {
-      success: true,
-      message: 'Google login successful',
-      data: {
-        user: {
-          id: 'a1b2c3d4-5678',
-          name: 'John Doe',
-          email: 'john.doe@gmail.com',
-          roles: 'USER',
-          emailVerified: true,
+    schema: {
+      example: {
+        success: true,
+        message: 'Google login successful',
+        data: {
+          user: {
+            id: 'a1b2c3d4-5678',
+            name: 'John Doe',
+            email: 'john.doe@gmail.com',
+            roles: 'USER',
+            emailVerified: true,
+          },
+          token: 'jwt.token.here',
         },
-        token: 'jwt.token.here',
       },
     },
   })
+  @ApiResponse({ status: 401, description: 'Invalid Google ID token' })
   @Post('google')
   googleLogin(@Body() dto: GoogleLoginDto) {
     return this.authService.googleLogin(dto);
