@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
+import { MailService } from 'src/mail/mail.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -14,6 +15,7 @@ describe('AuthService', () => {
         AuthService,
         JwtStrategy,
         JwtService,
+        MailService,
         PrismaService,
         {
           provide: ConfigService,

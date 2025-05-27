@@ -5,6 +5,7 @@ import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { MailService } from 'src/mail/mail.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -17,6 +18,7 @@ describe('AuthController', () => {
         JwtStrategy,
         JwtService,
         PrismaService,
+        MailService,
         {
           provide: ConfigService,
           useValue: {
