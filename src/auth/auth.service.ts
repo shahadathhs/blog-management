@@ -40,7 +40,7 @@ export class AuthService {
     private mailService: MailService,
   ) {
     this.googleClient = new OAuth2Client(
-      this.configService.get<string>(ENVEnum.GOOGLE_CLIENT_ID),
+      this.configService.get<string>(ENVEnum.OAUTH_CLIENT_ID),
     );
   }
 
@@ -355,7 +355,7 @@ export class AuthService {
   private async verifyGoogleToken(token: string): Promise<TokenPayload> {
     const ticket = await this.googleClient.verifyIdToken({
       idToken: token,
-      audience: this.configService.get<string>(ENVEnum.GOOGLE_CLIENT_ID),
+      audience: this.configService.get<string>(ENVEnum.OAUTH_CLIENT_ID),
     });
 
     const payload = ticket.getPayload();

@@ -1,11 +1,12 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { ENVEnum } from 'src/common/enum/env.enum';
 import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { MailService } from 'src/mail/mail.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -22,9 +23,9 @@ describe('AuthController', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'JWT_SECRET') return 'test-secret';
-              if (key === 'JWT_EXPIRES_IN') return '3600s';
+            get: jest.fn((key: ENVEnum) => {
+              if (key === ENVEnum.JWT_SECRET) return 'test-secret';
+              if (key === ENVEnum.JWT_EXPIRES_IN) return '3600s';
               return null;
             }),
           },

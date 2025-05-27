@@ -10,7 +10,7 @@ export class WelcomeResponse {
   })
   description: string;
 
-  @ApiProperty({ example: 'https://yourapi.com/docs' })
+  @ApiProperty({ example: 'https://blog-management-ss4f.onrender.com/docs' })
   docs: string;
 
   @ApiProperty({ example: 'Shahadath Hossen Sajib' })

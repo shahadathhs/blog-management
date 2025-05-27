@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ENVEnum } from 'src/common/enum/env.enum';
 import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthController } from './auth.controller';
@@ -14,9 +15,9 @@ import { AuthService } from './auth.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        secret: await config.get('JWT_SECRET'),
+        secret: await config.get(ENVEnum.JWT_SECRET),
         signOptions: {
-          expiresIn: await config.get('JWT_EXPIRES_IN'),
+          expiresIn: await config.get(ENVEnum.JWT_EXPIRES_IN),
         },
       }),
       inject: [ConfigService],

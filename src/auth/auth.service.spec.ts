@@ -5,6 +5,7 @@ import { JwtStrategy } from 'src/common/jwt/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthService } from './auth.service';
 import { MailService } from 'src/mail/mail.service';
+import { ENVEnum } from 'src/common/enum/env.enum';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -20,9 +21,9 @@ describe('AuthService', () => {
         {
           provide: ConfigService,
           useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'JWT_SECRET') return 'test-secret';
-              if (key === 'JWT_EXPIRES_IN') return '3600s';
+            get: jest.fn((key: ENVEnum) => {
+              if (key === ENVEnum.JWT_SECRET) return 'test-secret';
+              if (key === ENVEnum.JWT_EXPIRES_IN) return '3600s';
               return null;
             }),
           },

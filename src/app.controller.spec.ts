@@ -25,7 +25,7 @@ describe('AppController', () => {
       expect(result).toHaveProperty('description');
       expect(result).toHaveProperty(
         'docs',
-        'Visit /api for Swagger API documentation.',
+        'Visit /docs for Swagger API documentation.',
       );
       expect(result).toHaveProperty('author', 'https://github.com/shahadathhs');
       expect(result).toHaveProperty('timestamp');

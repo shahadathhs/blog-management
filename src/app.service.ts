@@ -7,7 +7,7 @@ export class AppService {
     return {
       message: '👋 Welcome to the Blog Management API!',
       description: 'This is the backend service for our application.',
-      docs: 'Visit /api for Swagger API documentation.',
+      docs: 'Visit /docs for Swagger API documentation.',
       author: 'https://github.com/shahadathhs',
       timestamp: new Date().toISOString(),
     };
