@@ -15,12 +15,12 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { Roles } from 'src/common/decorator/roles.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { UserEnum } from 'src/common/enum/user.enum';
-import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guard/roles.guard';
+import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
+import { GetUser } from 'src/common/jwt/jwt-get-user.decorator';
+import { Roles } from 'src/common/jwt/jwt-roles.decorator';
+import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserService } from './user.service';
 

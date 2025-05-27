@@ -9,7 +9,7 @@ import { HandleErrors } from 'src/common/decorator/handle-errors.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { ENVEnum } from 'src/common/enum/env.enum';
 import { UserEnum } from 'src/common/enum/user.enum';
-import { JWTPayload } from 'src/common/interface/jwt.interface';
+import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
 import {
   AppError,
   ErrorCode,

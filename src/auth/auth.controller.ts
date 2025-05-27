@@ -7,10 +7,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Roles } from 'src/common/decorator/roles.decorator';
 import { UserEnum } from 'src/common/enum/user.enum';
-import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
-import { RolesGuard } from 'src/common/guard/roles.guard';
+import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
+import { Roles } from 'src/common/jwt/jwt-roles.decorator';
+import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
 import { AuthService } from './auth.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';

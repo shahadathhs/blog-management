@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { UserEnum } from '../enum/user.enum';
 
 export interface RequestWithUser extends Request {
