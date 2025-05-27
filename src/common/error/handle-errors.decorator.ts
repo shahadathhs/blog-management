@@ -1,4 +1,4 @@
-import { handlePrismaError } from '../utils/prisma-error.util';
+import { handlePrismaError } from './handle-errors.prisma';
 
 export function HandleErrors(customMessage?: string) {
   return function <T>(

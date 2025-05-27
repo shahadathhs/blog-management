@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { HandleErrors } from 'src/common/decorator/handle-errors.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
+import { HandleErrors } from 'src/common/error/handle-errors.decorator';
 import {
   successResponse,
   TSuccessResponse,

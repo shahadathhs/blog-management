@@ -9,17 +9,6 @@ export enum ErrorCode {
   GOOGLE_MISSING_REQUIRED_FIELDS = 'GOOGLE_MISSING_REQUIRED_FIELDS',
 }
 
-export class AppError extends Error {
-  constructor(
-    public code: ErrorCode,
-    public message: string,
-    public statusCode: number = 500,
-  ) {
-    super(message);
-    this.name = 'AppError';
-  }
-}
-
 export const ErrorMessages = {
   [ErrorCode.USER_NOT_FOUND]: (email?: string) =>
     `User${email ? ` with email "${email}"` : ''} not found`,
@@ -34,3 +23,14 @@ export const ErrorMessages = {
   [ErrorCode.GOOGLE_MISSING_REQUIRED_FIELDS]: () =>
     'Google account missing required fields',
 };
+
+export class AppError extends Error {
+  constructor(
+    public code: ErrorCode,
+    public message: string,
+    public statusCode: number = 500,
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}

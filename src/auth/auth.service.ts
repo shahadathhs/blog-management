@@ -5,16 +5,16 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
-import { HandleErrors } from 'src/common/decorator/handle-errors.decorator';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { ENVEnum } from 'src/common/enum/env.enum';
 import { UserEnum } from 'src/common/enum/user.enum';
-import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
+import { HandleErrors } from 'src/common/error/handle-errors.decorator';
 import {
   AppError,
   ErrorCode,
   ErrorMessages,
-} from 'src/common/utils/error-handler.util';
+} from 'src/common/error/handle-errors.utils';
+import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
 import {
   successResponse,
   TSuccessResponse,
