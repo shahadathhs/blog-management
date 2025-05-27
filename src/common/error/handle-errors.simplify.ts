@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { AppError } from './handle-errors.utils';
+import { AppError } from './handle-errors.app';
 
-export function handlePrismaError(
+export function simplifyError(
   error: unknown,
   customMessage = 'Operation failed',
   record = 'Record',

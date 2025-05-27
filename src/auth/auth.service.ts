@@ -8,12 +8,10 @@ import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { ENVEnum } from 'src/common/enum/env.enum';
 import { UserEnum } from 'src/common/enum/user.enum';
+import { AppError } from 'src/common/error/handle-errors.app';
 import { HandleErrors } from 'src/common/error/handle-errors.decorator';
-import {
-  AppError,
-  ErrorCode,
-  ErrorMessages,
-} from 'src/common/error/handle-errors.utils';
+import { ErrorCodeEnum } from 'src/common/error/handle-errors.enum';
+import { ErrorMessages } from 'src/common/error/handle-errors.message';
 import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
 import {
   successResponse,
@@ -255,7 +253,7 @@ export class AuthService {
 
   private validateToken(token: string): void {
     if (!token) {
-      throw new AppError(ErrorCode.INVALID_TOKEN, 'Token not found', 400);
+      throw new AppError(ErrorCodeEnum.INVALID_TOKEN, 'Token not found', 400);
     }
   }
 
@@ -266,8 +264,8 @@ export class AuthService {
     });
     if (!user) {
       throw new AppError(
-        ErrorCode.USER_NOT_FOUND,
-        ErrorMessages[ErrorCode.USER_NOT_FOUND](email),
+        ErrorCodeEnum.USER_NOT_FOUND,
+        ErrorMessages[ErrorCodeEnum.USER_NOT_FOUND](email),
         404,
       );
     }
@@ -281,8 +279,8 @@ export class AuthService {
     });
     if (!user) {
       throw new AppError(
-        ErrorCode.USER_NOT_FOUND,
-        ErrorMessages[ErrorCode.USER_NOT_FOUND](),
+        ErrorCodeEnum.USER_NOT_FOUND,
+        ErrorMessages[ErrorCodeEnum.USER_NOT_FOUND](),
         404,
       );
     }
@@ -299,8 +297,8 @@ export class AuthService {
     });
     if (!user) {
       throw new AppError(
-        ErrorCode.USER_NOT_FOUND,
-        ErrorMessages[ErrorCode.USER_NOT_FOUND](),
+        ErrorCodeEnum.USER_NOT_FOUND,
+        ErrorMessages[ErrorCodeEnum.USER_NOT_FOUND](),
         404,
       );
     }
@@ -310,8 +308,8 @@ export class AuthService {
   private validateUserForLogin(user: User, email: string): void {
     if (!user.password) {
       throw new AppError(
-        ErrorCode.PASSWORD_REQUIRED,
-        ErrorMessages[ErrorCode.PASSWORD_REQUIRED](email),
+        ErrorCodeEnum.PASSWORD_REQUIRED,
+        ErrorMessages[ErrorCodeEnum.PASSWORD_REQUIRED](email),
         400,
       );
     }
@@ -320,8 +318,8 @@ export class AuthService {
   private validateUserHasPassword(user: User, email: string): void {
     if (!user.password) {
       throw new AppError(
-        ErrorCode.PASSWORD_REQUIRED,
-        ErrorMessages[ErrorCode.PASSWORD_REQUIRED](email),
+        ErrorCodeEnum.PASSWORD_REQUIRED,
+        ErrorMessages[ErrorCodeEnum.PASSWORD_REQUIRED](email),
         400,
       );
     }
@@ -334,8 +332,8 @@ export class AuthService {
     const isMatch = await bcrypt.compare(inputPassword, storedPassword);
     if (!isMatch) {
       throw new AppError(
-        ErrorCode.INVALID_CREDENTIALS,
-        ErrorMessages[ErrorCode.INVALID_CREDENTIALS](),
+        ErrorCodeEnum.INVALID_CREDENTIALS,
+        ErrorMessages[ErrorCodeEnum.INVALID_CREDENTIALS](),
         401,
       );
     }
@@ -347,8 +345,8 @@ export class AuthService {
   ): void {
     if (currentPassword === newPassword) {
       throw new AppError(
-        ErrorCode.SAME_PASSWORD,
-        ErrorMessages[ErrorCode.SAME_PASSWORD](),
+        ErrorCodeEnum.SAME_PASSWORD,
+        ErrorMessages[ErrorCodeEnum.SAME_PASSWORD](),
         400,
       );
     }
@@ -364,8 +362,8 @@ export class AuthService {
 
     if (!payload) {
       throw new AppError(
-        ErrorCode.INVALID_TOKEN,
-        ErrorMessages[ErrorCode.INVALID_TOKEN](),
+        ErrorCodeEnum.INVALID_TOKEN,
+        ErrorMessages[ErrorCodeEnum.INVALID_TOKEN](),
         400,
       );
     }
@@ -374,8 +372,8 @@ export class AuthService {
 
     if (!email || !sub) {
       throw new AppError(
-        ErrorCode.INVALID_TOKEN,
-        ErrorMessages[ErrorCode.INVALID_TOKEN](),
+        ErrorCodeEnum.INVALID_TOKEN,
+        ErrorMessages[ErrorCodeEnum.INVALID_TOKEN](),
         400,
       );
     }

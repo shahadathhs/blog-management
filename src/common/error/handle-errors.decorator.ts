@@ -1,4 +1,4 @@
-import { handlePrismaError } from './handle-errors.prisma';
+import { simplifyError } from './handle-errors.simplify';
 
 export function HandleErrors(customMessage?: string) {
   return function <T>(
@@ -16,7 +16,7 @@ export function HandleErrors(customMessage?: string) {
       try {
         return await method.apply(this, args);
       } catch (error) {
-        handlePrismaError(error, customMessage || `Failed to ${propertyName}`);
+        simplifyError(error, customMessage || `Failed to ${propertyName}`);
       }
     };
   };
