@@ -15,7 +15,16 @@ export class UserService {
 
   @HandleErrors('Failed to retrieve users')
   async findAll(): Promise<TSuccessResponse<UserEntity[]>> {
-    const users = await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany({
+      include: {
+        profile: true,
+        blogs: true,
+        notifications: true,
+        triggeredNotifications: true,
+        views: true,
+        comments: true,
+      },
+    });
 
     return successResponse(
       plainToInstance(UserEntity, users),
@@ -27,6 +36,14 @@ export class UserService {
   async findOne(id: string): Promise<TSuccessResponse<UserEntity>> {
     const user = await this.prisma.user.findUnique({
       where: { id },
+      include: {
+        profile: true,
+        blogs: true,
+        notifications: true,
+        triggeredNotifications: true,
+        views: true,
+        comments: true,
+      },
     });
 
     return successResponse(
@@ -73,14 +90,10 @@ export class UserService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<TSuccessResponse<UserEntity>> {
-    const { name, ...profileData } = dto;
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        ...(name && { name }),
-        profile: {
-          update: profileData,
-        },
+        profile: { update: dto },
       },
       include: {
         profile: true,
