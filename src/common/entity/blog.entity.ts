@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Blog, BlogTag, Comment, Notification, View } from '@prisma/client';
+import { Blog } from '@prisma/client';
 import { Expose, Type } from 'class-transformer';
 import { BlogTagEntity } from './blog-tag.entity';
 import { CommentEntity } from './comment.entity';
@@ -47,7 +47,7 @@ export class BlogEntity implements Blog {
     required: false,
   })
   @Type(() => CommentEntity)
-  comments?: Comment[];
+  comments?: CommentEntity[];
 
   @ApiProperty({
     type: () => [ViewEntity],
@@ -55,7 +55,7 @@ export class BlogEntity implements Blog {
     required: false,
   })
   @Type(() => ViewEntity)
-  views?: View[];
+  views?: ViewEntity[];
 
   @ApiProperty({
     type: () => [NotificationEntity],
@@ -63,7 +63,7 @@ export class BlogEntity implements Blog {
     required: false,
   })
   @Type(() => NotificationEntity)
-  notifications?: Notification[];
+  notifications?: NotificationEntity[];
 
   @ApiProperty({
     type: () => [BlogTagEntity],
@@ -71,7 +71,7 @@ export class BlogEntity implements Blog {
     required: false,
   })
   @Type(() => BlogTagEntity)
-  tags?: BlogTag[];
+  tags?: BlogTagEntity[];
 
   constructor(partial: Partial<BlogEntity>) {
     Object.assign(this, partial);

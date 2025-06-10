@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User as PrismaUser, Profile } from '@prisma/client';
+import { User } from '@prisma/client';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { UserEnum } from 'src/common/enum/user.enum';
 import { ProfileEntity } from './profile.entity';
 
 @Expose()
-export class UserEntity implements PrismaUser {
+export class UserEntity implements User {
   @ApiProperty({ type: String, description: 'User unique identifier' })
   id: string;
 
@@ -61,7 +61,7 @@ export class UserEntity implements PrismaUser {
     description: 'Linked profile details',
   })
   @Type(() => ProfileEntity)
-  profile?: Profile | null;
+  profile?: ProfileEntity | null;
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
