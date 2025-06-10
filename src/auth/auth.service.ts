@@ -19,12 +19,14 @@ import {
 } from 'src/common/utils/response.util';
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EmailLoginRequestDto } from './dto/email-login-request.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 
 @Injectable()
 export class AuthService {
@@ -51,7 +53,7 @@ export class AuthService {
 
     const user = await this.prisma.user.create({
       data: {
-        ...dto,
+        email: dto.email,
         password: hashedPassword,
         verificationToken,
         profile: {
@@ -222,6 +224,34 @@ export class AuthService {
         token,
       },
       'Google login successful',
+    );
+  }
+
+  @HandleErrors('Failed to generate login code')
+  async sendLoginCode(
+    dto: EmailLoginRequestDto,
+  ): Promise<TSuccessResponse<null>> {
+    const user = await this.findUserByEmail(dto.email);
+    console.log(user);
+    return successResponse(null, 'Login code send successfully');
+  }
+
+  @HandleErrors('Failed to verify code')
+  async verifyLoginCode(
+    dto: EmailLoginVerifyDto,
+  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+    const user = await this.findUserByEmail(dto.email);
+
+    // * TODO: 1. Validate code. 2. Remove code and expiry from user data
+
+    const token = this.generateAuthToken(user);
+
+    return successResponse(
+      {
+        user: plainToInstance(UserEntity, user),
+        token,
+      },
+      'Login successful',
     );
   }
 

@@ -12,18 +12,21 @@ import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
 import { Roles } from 'src/common/jwt/jwt-roles.decorator';
 import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
 import { AuthService } from './auth.service';
+import { EmailLoginRequestDto } from './dto/email-login-request.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
+import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // ----------
   @ApiOperation({
     summary: 'Register user with password',
     description: 'Registers a new user and sends a verification email.',
@@ -48,6 +51,7 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  // ----------
   @ApiOperation({
     summary: 'Login user with password',
     description: 'Logs in a user with email and password.',
@@ -60,6 +64,7 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  // ----------
   @ApiOperation({
     summary: 'Send reset password email',
     description: 'Sends a password reset link to the user’s email.',
@@ -72,6 +77,7 @@ export class AuthController {
     return this.authService.forgotPassword(dto);
   }
 
+  // ----------
   @ApiOperation({
     summary: 'Set new password with token',
     description: 'Sets a new password using the reset token.',
@@ -84,6 +90,7 @@ export class AuthController {
     return this.authService.setNewPassword(dto);
   }
 
+  // ----------
   @ApiOperation({
     summary: 'Reset password (user must be authenticated)',
     description:
@@ -100,6 +107,7 @@ export class AuthController {
     return this.authService.resetPassword(dto);
   }
 
+  // ----------
   @ApiOperation({
     summary: 'Login/Register using Google OAuth',
     description: `Accepts a Google ID token and either logs in an existing user or registers a new user if not found.
@@ -142,5 +150,32 @@ Example:
   @Post('google')
   googleLogin(@Body() dto: GoogleLoginDto) {
     return this.authService.googleLogin(dto);
+  }
+
+  // ----------
+  @ApiOperation({
+    summary: 'Request login code via email',
+    description: 'Sends a login code to the user’s email address.',
+  })
+  @ApiBody({ type: EmailLoginRequestDto })
+  @ApiResponse({ status: 200, description: 'Login code sent successfully' })
+  @Post('email-login/request')
+  requestEmailLogin(@Body() dto: EmailLoginRequestDto) {
+    return this.authService.sendLoginCode(dto);
+  }
+
+  // ----------
+  @ApiOperation({
+    summary: 'Verify email login code',
+    description: 'Verifies the code and logs the user in if valid.',
+  })
+  @ApiBody({ type: EmailLoginVerifyDto })
+  @ApiResponse({
+    status: 200,
+    description: 'User logged in successfully with email code',
+  })
+  @Post('email-login/verify')
+  verifyEmailLogin(@Body() dto: EmailLoginVerifyDto) {
+    return this.authService.verifyLoginCode(dto);
   }
 }
