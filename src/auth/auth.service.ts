@@ -258,6 +258,7 @@ export class AuthService {
     await this.validateLoginCode(
       dto.code.toString(),
       user.emailLoginCode as string,
+      user.emailLoginCodeExpiry as Date,
     );
 
     await this.prisma.user.update({
@@ -301,12 +302,21 @@ export class AuthService {
   private async validateLoginCode(
     inputCode: string,
     storedCode: string,
+    emailLoginCodeExpiry: Date,
   ): Promise<void> {
+    if (emailLoginCodeExpiry.getTime() <= Date.now()) {
+      throw new AppError(
+        ErrorCodeEnum.CODE_EXPIRED,
+        ErrorMessages[ErrorCodeEnum.CODE_EXPIRED](),
+        401,
+      );
+    }
+
     const isMatch = await bcrypt.compare(inputCode, storedCode);
     if (!isMatch) {
       throw new AppError(
-        ErrorCodeEnum.INVALID_CREDENTIALS,
-        ErrorMessages[ErrorCodeEnum.INVALID_CREDENTIALS](),
+        ErrorCodeEnum.INVALID_CODE,
+        ErrorMessages[ErrorCodeEnum.INVALID_CODE](),
         401,
       );
     }
