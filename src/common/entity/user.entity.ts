@@ -9,9 +9,6 @@ export class UserEntity implements PrismaUser {
   @ApiProperty({ type: String, description: 'User unique identifier' })
   id: string;
 
-  @ApiProperty({ type: String, nullable: true, description: 'User full name' })
-  name: string | null;
-
   @ApiProperty({ type: String, description: 'User email address' })
   email: string;
 
@@ -47,6 +44,20 @@ export class UserEntity implements PrismaUser {
     description: 'Password reset token expiration date',
   })
   resetTokenExpiry: Date | null;
+
+  @ApiProperty({
+    type: Number,
+    nullable: true,
+    description: 'Email login code',
+  })
+  emailLoginCode: number | null;
+
+  @ApiProperty({
+    type: Date,
+    nullable: true,
+    description: 'Email login code expiration date',
+  })
+  emailLoginCodeExpiry: Date | null;
 
   @ApiProperty({ type: Boolean, description: 'Account active status' })
   isActive: boolean;

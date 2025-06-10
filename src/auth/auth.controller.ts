@@ -129,7 +129,6 @@ Example:
         data: {
           user: {
             id: 'a1b2c3d4-5678',
-            name: 'John Doe',
             email: 'john.doe@gmail.com',
             roles: 'USER',
             emailVerified: true,

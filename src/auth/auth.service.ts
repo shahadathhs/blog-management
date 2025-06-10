@@ -56,6 +56,7 @@ export class AuthService {
         verificationToken,
         profile: {
           create: {
+            name: dto.name,
             bio: '',
             avatar: null,
             website: '',
@@ -188,11 +189,11 @@ export class AuthService {
       user = await this.prisma.user.create({
         data: {
           email: payload.email as string,
-          name: payload.name ?? 'Unnamed Google User',
           googleId: payload.sub,
           emailVerified: true,
           profile: {
             create: {
+              name: payload.name ?? 'Unnamed Google User',
               bio: '',
               avatar: payload.picture,
               website: '',

@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -8,6 +9,14 @@ import { ENVEnum } from './common/enum/env.enum';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // * removes unexpected fields
+      forbidNonWhitelisted: true, // * throws error if unknown field is present
+      transform: true, // * auto-transform payloads to DTO instances
+    }),
+  );
 
   // * Swagger config
   const config = new DocumentBuilder()

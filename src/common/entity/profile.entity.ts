@@ -13,6 +13,9 @@ export class ProfileEntity implements Profile {
   @ApiProperty({ type: String, description: 'ID of the associated user' })
   userId: string;
 
+  @ApiProperty({ type: String, nullable: true, description: 'User full name' })
+  name: string | null;
+
   @ApiProperty({ type: String, nullable: true, description: 'User biography' })
   bio: string | null;
 
