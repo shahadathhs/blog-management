@@ -18,7 +18,7 @@ model User {
   verificationToken    String?
   resetToken           String?
   resetTokenExpiry     DateTime?
-  emailLoginCode       Int?
+  emailLoginCode       String?
   emailLoginCodeExpiry DateTime?
   isActive             Boolean   @default(true)
 

@@ -21,9 +21,6 @@ export class UserEntity implements PrismaUser {
   })
   emailVerified: boolean;
 
-  @ApiProperty({ type: String, description: 'Email verification token' })
-  verificationToken: string;
-
   @ApiProperty({
     type: String,
     nullable: true,
@@ -31,33 +28,23 @@ export class UserEntity implements PrismaUser {
   })
   googleId: string | null;
 
-  @ApiProperty({
-    type: String,
-    nullable: true,
-    description: 'Password reset token',
-  })
+  @Exclude()
+  verificationToken: string;
+
+  @Exclude()
   resetToken: string | null;
 
-  @ApiProperty({
-    type: Date,
-    nullable: true,
-    description: 'Password reset token expiration date',
-  })
+  @Exclude()
   resetTokenExpiry: Date | null;
 
-  @ApiProperty({
-    type: Number,
-    nullable: true,
-    description: 'Email login code',
-  })
-  emailLoginCode: number | null;
+  @Exclude()
+  emailLoginCode: string | null;
 
-  @ApiProperty({
-    type: Date,
-    nullable: true,
-    description: 'Email login code expiration date',
-  })
+  @Exclude()
   emailLoginCodeExpiry: Date | null;
+
+  @Exclude()
+  password: string | null;
 
   @ApiProperty({ type: Boolean, description: 'Account active status' })
   isActive: boolean;
@@ -67,9 +54,6 @@ export class UserEntity implements PrismaUser {
 
   @ApiProperty({ type: Date, description: 'User last updated timestamp' })
   updatedAt: Date;
-
-  @Exclude()
-  password: string | null;
 
   @ApiProperty({
     type: () => ProfileEntity,

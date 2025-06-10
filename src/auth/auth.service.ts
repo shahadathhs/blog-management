@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
+import { randomInt } from 'crypto';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import { UserEntity } from 'src/common/entity/user.entity';
 import { ENVEnum } from 'src/common/enum/env.enum';
@@ -20,13 +21,13 @@ import {
 import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailLoginRequestDto } from './dto/email-login-request.dto';
+import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
-import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 
 @Injectable()
 export class AuthService {
@@ -232,7 +233,19 @@ export class AuthService {
     dto: EmailLoginRequestDto,
   ): Promise<TSuccessResponse<null>> {
     const user = await this.findUserByEmail(dto.email);
-    console.log(user);
+
+    const { code, hashedCode } = await this.generateLoginCode();
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailLoginCode: hashedCode,
+        emailLoginCodeExpiry: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    await this.mailService.sendLoginCodeEmail(user.email, code.toString());
+
     return successResponse(null, 'Login code send successfully');
   }
 
@@ -242,7 +255,19 @@ export class AuthService {
   ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
     const user = await this.findUserByEmail(dto.email);
 
-    // * TODO: 1. Validate code. 2. Remove code and expiry from user data
+    await this.validateLoginCode(
+      dto.code.toString(),
+      user.emailLoginCode as string,
+    );
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        emailLoginCode: null,
+        emailLoginCodeExpiry: null,
+      },
+    });
 
     const token = this.generateAuthToken(user);
 
@@ -257,7 +282,34 @@ export class AuthService {
 
   // * private helper
   private async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, this.BCRYPT_ROUNDS);
+    return await bcrypt.hash(password, this.BCRYPT_ROUNDS);
+  }
+
+  private async generateLoginCode(): Promise<{
+    code: number;
+    hashedCode: string;
+  }> {
+    const code = randomInt(100000, 1000000);
+    const hashedCode = await bcrypt.hash(code.toString(), this.BCRYPT_ROUNDS);
+
+    return {
+      code,
+      hashedCode,
+    };
+  }
+
+  private async validateLoginCode(
+    inputCode: string,
+    storedCode: string,
+  ): Promise<void> {
+    const isMatch = await bcrypt.compare(inputCode, storedCode);
+    if (!isMatch) {
+      throw new AppError(
+        ErrorCodeEnum.INVALID_CREDENTIALS,
+        ErrorMessages[ErrorCodeEnum.INVALID_CREDENTIALS](),
+        401,
+      );
+    }
   }
 
   private generateVerificationToken(email: string): string {

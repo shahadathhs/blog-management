@@ -67,4 +67,22 @@ export class MailService {
 
     return this.transporter.sendMail(mailOptions);
   }
+
+  async sendLoginCodeEmail(
+    email: string,
+    code: string,
+  ): Promise<nodemailer.SentMessageInfo> {
+    const mailOptions = {
+      from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
+      to: email,
+      subject: 'Login Code',
+      html: `
+        <h3>Welcome!</h3>
+        <p>Please login by using the code below:</p>
+        <p>Your login code is ${code}</p>
+      `,
+    };
+
+    return this.transporter.sendMail(mailOptions);
+  }
 }
