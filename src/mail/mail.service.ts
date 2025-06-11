@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import * as nodemailer from "nodemailer";
-import { ENVEnum } from "src/common/enum/env.enum";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as nodemailer from 'nodemailer';
+import { ENVEnum } from 'src/common/enum/env.enum';
 
 @Injectable()
 export class MailService {
@@ -9,7 +9,7 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       // auth: {
       //   type: 'OAuth2',
       //   user: this.configService.get<string>(ENVEnum.MAIL_USER),
@@ -37,7 +37,7 @@ export class MailService {
     const mailOptions = {
       from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
       to: email,
-      subject: "Email Verification",
+      subject: 'Email Verification',
       html: `
         <h3>Welcome!</h3>
         <p>Please verify your email by clicking the link below:</p>
@@ -57,7 +57,7 @@ export class MailService {
     const mailOptions = {
       from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
       to: email,
-      subject: "Password Reset",
+      subject: 'Password Reset',
       html: `
         <h3>Welcome!</h3>
         <p>Please reset your password by visiting the link below:</p>
@@ -75,7 +75,7 @@ export class MailService {
     const mailOptions = {
       from: `"No Reply" <${this.configService.get<string>(ENVEnum.MAIL_USER)}>`,
       to: email,
-      subject: "Login Code",
+      subject: 'Login Code',
       html: `
         <h3>Welcome!</h3>
         <p>Please login by using the code below:</p>

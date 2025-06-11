@@ -1,19 +1,19 @@
-import { Injectable } from "@nestjs/common";
-import { plainToInstance } from "class-transformer";
-import { UserEntity } from "src/common/entity/user.entity";
-import { HandleErrors } from "src/common/error/handle-errors.decorator";
+import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { UserEntity } from 'src/common/entity/user.entity';
+import { HandleErrors } from 'src/common/error/handle-errors.decorator';
 import {
   successResponse,
   TSuccessResponse,
-} from "src/common/utils/response.util";
-import { PrismaService } from "src/prisma/prisma.service";
-import { UpdateProfileDto } from "./dto/update-profile.dto";
+} from 'src/common/utils/response.util';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  @HandleErrors("Failed to retrieve users")
+  @HandleErrors('Failed to retrieve users')
   async findAll(): Promise<TSuccessResponse<UserEntity[]>> {
     const users = await this.prisma.user.findMany({
       include: {
@@ -28,11 +28,11 @@ export class UserService {
 
     return successResponse(
       plainToInstance(UserEntity, users),
-      "Users retrieved successfully",
+      'Users retrieved successfully',
     );
   }
 
-  @HandleErrors("Failed to retrieve user")
+  @HandleErrors('Failed to retrieve user')
   async findOne(id: string): Promise<TSuccessResponse<UserEntity>> {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -48,11 +48,11 @@ export class UserService {
 
     return successResponse(
       plainToInstance(UserEntity, user),
-      "User retrieved successfully",
+      'User retrieved successfully',
     );
   }
 
-  @HandleErrors("Failed to remove user")
+  @HandleErrors('Failed to remove user')
   async remove(id: string): Promise<TSuccessResponse<UserEntity>> {
     await this.findOne(id); // * ensure user exists
     const user = await this.prisma.user.update({
@@ -61,11 +61,11 @@ export class UserService {
     });
     return successResponse(
       plainToInstance(UserEntity, user),
-      "User removed successfully",
+      'User removed successfully',
     );
   }
 
-  @HandleErrors("Failed to retriever user profile")
+  @HandleErrors('Failed to retriever user profile')
   async getProfile(userId: string): Promise<TSuccessResponse<UserEntity>> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -81,11 +81,11 @@ export class UserService {
 
     return successResponse(
       plainToInstance(UserEntity, user),
-      "User profile retrieve successfully",
+      'User profile retrieve successfully',
     );
   }
 
-  @HandleErrors("Failed to update profile")
+  @HandleErrors('Failed to update profile')
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,
@@ -102,7 +102,7 @@ export class UserService {
 
     return successResponse(
       plainToInstance(UserEntity, user),
-      "Profile updated successfully",
+      'Profile updated successfully',
     );
   }
 }

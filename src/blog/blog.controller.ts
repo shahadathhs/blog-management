@@ -7,23 +7,23 @@ import {
   Patch,
   Post,
   UseGuards,
-} from "@nestjs/common";
+} from '@nestjs/common';
 import {
   ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiUnauthorizedResponse,
-} from "@nestjs/swagger";
-import { BlogEntity } from "src/common/entity/blog.entity";
-import { UserEnum } from "src/common/enum/user.enum";
-import { JwtAuthGuard } from "src/common/jwt/jwt-auth.guard";
-import { Roles } from "src/common/jwt/jwt-roles.decorator";
-import { RolesGuard } from "src/common/jwt/jwt-roles.guard";
-import { BlogService } from "./blog.service";
-import { CreateBlogDto } from "./dto/create-blog.dto";
-import { UpdateBlogDto } from "./dto/update-blog.dto";
+} from '@nestjs/swagger';
+import { BlogEntity } from 'src/common/entity/blog.entity';
+import { UserEnum } from 'src/common/enum/user.enum';
+import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
+import { Roles } from 'src/common/jwt/jwt-roles.decorator';
+import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
+import { BlogService } from './blog.service';
+import { CreateBlogDto } from './dto/create-blog.dto';
+import { UpdateBlogDto } from './dto/update-blog.dto';
 
-@Controller("blog")
+@Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
@@ -33,16 +33,16 @@ export class BlogController {
   }
 
   @ApiOperation({
-    summary: "Get all blogs",
+    summary: 'Get all blogs',
     description:
-      "Retrieve a list of all blogs. Accessible only to Admin users.",
+      'Retrieve a list of all blogs. Accessible only to Admin users.',
   })
   @ApiOkResponse({
-    description: "Blogs retrieved successfully",
+    description: 'Blogs retrieved successfully',
     type: [BlogEntity],
   })
-  @ApiUnauthorizedResponse({ description: "Unauthorized" })
-  @ApiForbiddenResponse({ description: "Forbidden: Admins only" })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
@@ -50,18 +50,18 @@ export class BlogController {
     return this.blogService.findAll();
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
+  @Get(':id')
+  findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
 
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateBlogDto: UpdateBlogDto) {
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateBlogDto: UpdateBlogDto) {
     return this.blogService.update(id, updateBlogDto);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
+  @Delete(':id')
+  remove(@Param('id') id: string) {
     return this.blogService.remove(id);
   }
 }

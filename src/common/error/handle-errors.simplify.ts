@@ -4,20 +4,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
-} from "@nestjs/common";
-import { Prisma } from "@prisma/client";
-import { AppError } from "./handle-errors.app";
+} from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { AppError } from './handle-errors.app';
 
 export function simplifyError(
   error: unknown,
-  customMessage = "Operation failed",
-  record = "Record",
+  customMessage = 'Operation failed',
+  record = 'Record',
 ): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
-      case "P2002":
+      case 'P2002':
         throw new ConflictException(`${record} already exists`);
-      case "P2025":
+      case 'P2025':
         throw new NotFoundException(`${record} not found`);
     }
   }
