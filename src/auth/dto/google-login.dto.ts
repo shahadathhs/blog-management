@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class GoogleLoginDto {
-  @ApiProperty({ description: 'ID token from Google Sign-In' })
+  @ApiProperty({ description: "ID token from Google Sign-In" })
   token: string;
 }

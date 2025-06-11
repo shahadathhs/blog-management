@@ -1,30 +1,30 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@prisma/client';
-import { Exclude, Expose, Type } from 'class-transformer';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { ProfileEntity } from './profile.entity';
+import { ApiProperty } from "@nestjs/swagger";
+import { User } from "@prisma/client";
+import { Exclude, Expose, Type } from "class-transformer";
+import { UserEnum } from "src/common/enum/user.enum";
+import { ProfileEntity } from "./profile.entity";
 
 @Expose()
 export class UserEntity implements User {
-  @ApiProperty({ type: String, description: 'User unique identifier' })
+  @ApiProperty({ type: String, description: "User unique identifier" })
   id: string;
 
-  @ApiProperty({ type: String, description: 'User email address' })
+  @ApiProperty({ type: String, description: "User email address" })
   email: string;
 
-  @ApiProperty({ enum: UserEnum, description: 'User role' })
+  @ApiProperty({ enum: UserEnum, description: "User role" })
   roles: UserEnum;
 
   @ApiProperty({
     type: Boolean,
-    description: 'Whether the user has verified their email',
+    description: "Whether the user has verified their email",
   })
   emailVerified: boolean;
 
   @ApiProperty({
     type: String,
     nullable: true,
-    description: 'Google ID if registered with Google',
+    description: "Google ID if registered with Google",
   })
   googleId: string | null;
 
@@ -46,19 +46,19 @@ export class UserEntity implements User {
   @Exclude()
   password: string | null;
 
-  @ApiProperty({ type: Boolean, description: 'Account active status' })
+  @ApiProperty({ type: Boolean, description: "Account active status" })
   isActive: boolean;
 
-  @ApiProperty({ type: Date, description: 'User creation timestamp' })
+  @ApiProperty({ type: Date, description: "User creation timestamp" })
   createdAt: Date;
 
-  @ApiProperty({ type: Date, description: 'User last updated timestamp' })
+  @ApiProperty({ type: Date, description: "User last updated timestamp" })
   updatedAt: Date;
 
   @ApiProperty({
     type: () => ProfileEntity,
     nullable: true,
-    description: 'Linked profile details',
+    description: "Linked profile details",
   })
   @Type(() => ProfileEntity)
   profile?: ProfileEntity | null;

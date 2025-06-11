@@ -1,36 +1,36 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { Prisma, PrismaClient } from '@prisma/client';
-import chalk from 'chalk';
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Prisma, PrismaClient } from "@prisma/client";
+import chalk from "chalk";
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'error'>
+  extends PrismaClient<Prisma.PrismaClientOptions, "query" | "error">
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
     super({
       log: [
-        { emit: 'event', level: 'query' },
-        { emit: 'event', level: 'error' },
+        { emit: "event", level: "query" },
+        { emit: "event", level: "error" },
       ],
     });
 
-    this.$on('query', (e: Prisma.QueryEvent) => {
-      console.group(chalk.bgBlue.white.bold('📦 Prisma Query Log'));
+    this.$on("query", (e: Prisma.QueryEvent) => {
+      console.group(chalk.bgBlue.white.bold("📦 Prisma Query Log"));
       console.log(
-        `${chalk.yellow('🕒 Timestamp:')} ${chalk.white(e.timestamp)}`,
+        `${chalk.yellow("🕒 Timestamp:")} ${chalk.white(e.timestamp)}`,
       );
-      console.log(`${chalk.green('📜 Query:')} ${chalk.white(e.query)}`);
-      console.log(`${chalk.magenta('📦 Params:')} ${chalk.white(e.params)}`);
+      console.log(`${chalk.green("📜 Query:")} ${chalk.white(e.query)}`);
+      console.log(`${chalk.magenta("📦 Params:")} ${chalk.white(e.params)}`);
       console.log(
-        `${chalk.cyan('⚡ Duration:')} ${chalk.white(`${e.duration} ms`)}`,
+        `${chalk.cyan("⚡ Duration:")} ${chalk.white(`${e.duration} ms`)}`,
       );
       console.groupEnd();
-      console.log(chalk.gray('-'.repeat(60)));
+      console.log(chalk.gray("-".repeat(60)));
     });
 
-    this.$on('error', (e: Prisma.LogEvent) => {
-      console.group(chalk.bgRed.white.bold('❌ Prisma Error'));
+    this.$on("error", (e: Prisma.LogEvent) => {
+      console.group(chalk.bgRed.white.bold("❌ Prisma Error"));
       console.error(e);
       console.groupEnd();
     });

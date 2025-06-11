@@ -1,29 +1,29 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Notification, NotificationType } from '@prisma/client';
-import { Expose, Type } from 'class-transformer';
-import { BlogEntity } from './blog.entity';
-import { UserEntity } from './user.entity';
+import { ApiProperty } from "@nestjs/swagger";
+import { Notification, NotificationType } from "@prisma/client";
+import { Expose, Type } from "class-transformer";
+import { BlogEntity } from "./blog.entity";
+import { UserEntity } from "./user.entity";
 
 @Expose()
 export class NotificationEntity implements Notification {
-  @ApiProperty({ type: String, description: 'Notification unique identifier' })
+  @ApiProperty({ type: String, description: "Notification unique identifier" })
   id: string;
 
-  @ApiProperty({ enum: NotificationType, description: 'Type of notification' })
+  @ApiProperty({ enum: NotificationType, description: "Type of notification" })
   type: NotificationType;
 
-  @ApiProperty({ type: String, description: 'Notification message' })
+  @ApiProperty({ type: String, description: "Notification message" })
   message: string;
 
-  @ApiProperty({ type: Boolean, description: 'Read status' })
+  @ApiProperty({ type: Boolean, description: "Read status" })
   read: boolean;
 
-  @ApiProperty({ type: String, description: 'Recipient user ID' })
+  @ApiProperty({ type: String, description: "Recipient user ID" })
   recipientId: string;
 
   @ApiProperty({
     type: () => UserEntity,
-    description: 'Notification recipient',
+    description: "Notification recipient",
   })
   @Type(() => UserEntity)
   recipient: UserEntity;
@@ -31,25 +31,25 @@ export class NotificationEntity implements Notification {
   @ApiProperty({
     type: String,
     nullable: true,
-    description: 'Actor user ID who triggered notification',
+    description: "Actor user ID who triggered notification",
   })
   actorId: string | null;
 
   @ApiProperty({
     type: () => UserEntity,
     nullable: true,
-    description: 'Notification actor',
+    description: "Notification actor",
   })
   @Type(() => UserEntity)
   actor?: UserEntity | null;
 
-  @ApiProperty({ type: String, nullable: true, description: 'Related blog ID' })
+  @ApiProperty({ type: String, nullable: true, description: "Related blog ID" })
   blogId: string | null;
 
   @ApiProperty({
     type: () => BlogEntity,
     nullable: true,
-    description: 'Related blog',
+    description: "Related blog",
   })
   @Type(() => BlogEntity)
   blog?: BlogEntity | null;
@@ -57,24 +57,24 @@ export class NotificationEntity implements Notification {
   @ApiProperty({
     type: String,
     nullable: true,
-    description: 'Related comment ID',
+    description: "Related comment ID",
   })
   commentId: string | null;
 
   @ApiProperty({
     type: Object,
     nullable: true,
-    description: 'Additional metadata in JSON format',
+    description: "Additional metadata in JSON format",
   })
   metadata: object | null;
 
-  @ApiProperty({ type: Date, description: 'Notification creation timestamp' })
+  @ApiProperty({ type: Date, description: "Notification creation timestamp" })
   createdAt: Date;
 
   @ApiProperty({
     type: Date,
     nullable: true,
-    description: 'Timestamp when notification was read',
+    description: "Timestamp when notification was read",
   })
   readAt: Date | null;
 

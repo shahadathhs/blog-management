@@ -2,12 +2,12 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
-} from 'class-validator';
+} from "class-validator";
 
 export function IsSixDigitCode(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
-      name: 'isSixDigitCode',
+      name: "isSixDigitCode",
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,

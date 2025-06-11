@@ -1,4 +1,4 @@
-import { ErrorCodeEnum } from './handle-errors.enum';
+import { ErrorCodeEnum } from "./handle-errors.enum";
 
 export class AppError extends Error {
   constructor(
@@ -7,6 +7,6 @@ export class AppError extends Error {
     public statusCode: number = 500,
   ) {
     super(message);
-    this.name = 'AppError';
+    this.name = "AppError";
   }
 }

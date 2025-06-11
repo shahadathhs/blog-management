@@ -6,7 +6,7 @@ import {
   Param,
   Patch,
   UseGuards,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiBody,
   ApiForbiddenResponse,
@@ -14,32 +14,32 @@ import {
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
-import { UserEntity } from 'src/common/entity/user.entity';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
-import { GetUser } from 'src/common/jwt/jwt-get-user.decorator';
-import { Roles } from 'src/common/jwt/jwt-roles.decorator';
-import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UserService } from './user.service';
+} from "@nestjs/swagger";
+import { UserEntity } from "src/common/entity/user.entity";
+import { UserEnum } from "src/common/enum/user.enum";
+import { JwtAuthGuard } from "src/common/jwt/jwt-auth.guard";
+import { GetUser } from "src/common/jwt/jwt-get-user.decorator";
+import { Roles } from "src/common/jwt/jwt-roles.decorator";
+import { RolesGuard } from "src/common/jwt/jwt-roles.guard";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { UserService } from "./user.service";
 
-@ApiTags('user')
-@Controller('user')
+@ApiTags("user")
+@Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({
-    summary: 'Get all users',
+    summary: "Get all users",
     description:
-      'Retrieve a list of all users. Accessible only to Admin users.',
+      "Retrieve a list of all users. Accessible only to Admin users.",
   })
   @ApiOkResponse({
-    description: 'Users retrieved successfully',
+    description: "Users retrieved successfully",
     type: [UserEntity],
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Forbidden: Admins only" })
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
@@ -48,74 +48,74 @@ export class UserController {
   }
 
   @ApiOperation({
-    summary: 'Get logged-in user profile',
+    summary: "Get logged-in user profile",
     description:
-      'Retrieve the profile of the currently authenticated user. Accessible to all authenticated roles.',
+      "Retrieve the profile of the currently authenticated user. Accessible to all authenticated roles.",
   })
   @ApiOkResponse({
-    description: 'User profile retrieved successfully',
+    description: "User profile retrieved successfully",
     type: UserEntity,
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden' })
-  @Get('me')
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Forbidden" })
+  @Get("me")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
-  getProfile(@GetUser('userId') userId: string) {
+  getProfile(@GetUser("userId") userId: string) {
     return this.userService.getProfile(userId);
   }
 
   @ApiOperation({
-    summary: 'Update profile of logged-in user',
-    description: 'Allows logged-in user to update their own profile.',
+    summary: "Update profile of logged-in user",
+    description: "Allows logged-in user to update their own profile.",
   })
   @ApiBody({ type: UpdateProfileDto })
   @ApiOkResponse({
-    description: 'Profile updated successfully',
+    description: "Profile updated successfully",
     type: UserEntity,
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden' })
-  @Patch('profile')
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Forbidden" })
+  @Patch("profile")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
   updateProfile(
-    @GetUser('userId') userId: string,
+    @GetUser("userId") userId: string,
     @Body() dto: UpdateProfileDto,
   ) {
     return this.userService.updateProfile(userId, dto);
   }
 
   @ApiOperation({
-    summary: 'Get a specific user by ID',
+    summary: "Get a specific user by ID",
     description:
-      'Retrieve a single user by their ID. Accessible only to Admins.',
+      "Retrieve a single user by their ID. Accessible only to Admins.",
   })
   @ApiOkResponse({
-    description: 'User retrieved successfully',
+    description: "User retrieved successfully",
     type: UserEntity,
   })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
-  @Get(':id')
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Forbidden: Admins only" })
+  @Get(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
-  findOne(@Param('id') id: string) {
+  findOne(@Param("id") id: string) {
     return this.userService.findOne(id);
   }
 
   @ApiOperation({
-    summary: 'Soft delete a user by ID',
+    summary: "Soft delete a user by ID",
     description:
-      'Soft delete a user by setting `isActive` to `false`. This action is only permitted for Admins.',
+      "Soft delete a user by setting `isActive` to `false`. This action is only permitted for Admins.",
   })
-  @ApiOkResponse({ description: 'User removed successfully', type: UserEntity })
-  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
-  @ApiForbiddenResponse({ description: 'Forbidden: Admins only' })
-  @Delete(':id')
+  @ApiOkResponse({ description: "User removed successfully", type: UserEntity })
+  @ApiUnauthorizedResponse({ description: "Unauthorized" })
+  @ApiForbiddenResponse({ description: "Forbidden: Admins only" })
+  @Delete(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.Admin)
-  remove(@Param('id') id: string) {
+  remove(@Param("id") id: string) {
     return this.userService.remove(id);
   }
 }

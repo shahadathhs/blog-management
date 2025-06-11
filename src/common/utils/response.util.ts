@@ -6,7 +6,7 @@ export type TSuccessResponse<T = any> = {
 
 export const successResponse = <T>(
   data: T,
-  message = 'Success',
+  message = "Success",
 ): TSuccessResponse<T> => ({
   success: true,
   message,

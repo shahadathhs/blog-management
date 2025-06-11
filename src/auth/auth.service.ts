@@ -1,33 +1,33 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
-import { plainToInstance } from 'class-transformer';
-import { randomInt } from 'crypto';
-import { OAuth2Client, TokenPayload } from 'google-auth-library';
-import { UserEntity } from 'src/common/entity/user.entity';
-import { ENVEnum } from 'src/common/enum/env.enum';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { AppError } from 'src/common/error/handle-errors.app';
-import { HandleErrors } from 'src/common/error/handle-errors.decorator';
-import { ErrorCodeEnum } from 'src/common/error/handle-errors.enum';
-import { ErrorMessages } from 'src/common/error/handle-errors.message';
-import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { User } from "@prisma/client";
+import * as bcrypt from "bcrypt";
+import { plainToInstance } from "class-transformer";
+import { randomInt } from "crypto";
+import { OAuth2Client, TokenPayload } from "google-auth-library";
+import { UserEntity } from "src/common/entity/user.entity";
+import { ENVEnum } from "src/common/enum/env.enum";
+import { UserEnum } from "src/common/enum/user.enum";
+import { AppError } from "src/common/error/handle-errors.app";
+import { HandleErrors } from "src/common/error/handle-errors.decorator";
+import { ErrorCodeEnum } from "src/common/error/handle-errors.enum";
+import { ErrorMessages } from "src/common/error/handle-errors.message";
+import { JWTPayload } from "src/common/jwt/jwt-payload.interface";
 import {
   successResponse,
   TSuccessResponse,
-} from 'src/common/utils/response.util';
-import { MailService } from 'src/mail/mail.service';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { EmailLoginRequestDto } from './dto/email-login-request.dto';
-import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
-import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { GoogleLoginDto } from './dto/google-login.dto';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SetNewPasswordDto } from './dto/set-new-password.dto';
+} from "src/common/utils/response.util";
+import { MailService } from "src/mail/mail.service";
+import { PrismaService } from "src/prisma/prisma.service";
+import { EmailLoginRequestDto } from "./dto/email-login-request.dto";
+import { EmailLoginVerifyDto } from "./dto/email-login-verify.dto";
+import { ForgotPasswordDto } from "./dto/forgot-password.dto";
+import { GoogleLoginDto } from "./dto/google-login.dto";
+import { LoginDto } from "./dto/login.dto";
+import { RegisterDto } from "./dto/register.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
+import { SetNewPasswordDto } from "./dto/set-new-password.dto";
 
 @Injectable()
 export class AuthService {
@@ -47,7 +47,7 @@ export class AuthService {
     );
   }
 
-  @HandleErrors('Failed to register user')
+  @HandleErrors("Failed to register user")
   async register(dto: RegisterDto): Promise<TSuccessResponse<UserEntity>> {
     const hashedPassword = await this.hashPassword(dto.password);
     const verificationToken = this.generateVerificationToken(dto.email);
@@ -60,10 +60,10 @@ export class AuthService {
         profile: {
           create: {
             name: dto.name,
-            bio: '',
+            bio: "",
             avatar: null,
-            website: '',
-            location: '',
+            website: "",
+            location: "",
           },
         },
       },
@@ -73,11 +73,11 @@ export class AuthService {
 
     return successResponse(
       plainToInstance(UserEntity, user),
-      'User registered successfully',
+      "User registered successfully",
     );
   }
 
-  @HandleErrors('Failed to verify email')
+  @HandleErrors("Failed to verify email")
   async verifyEmail(token: string): Promise<TSuccessResponse<null>> {
     this.validateToken(token);
 
@@ -91,10 +91,10 @@ export class AuthService {
       },
     });
 
-    return successResponse(null, 'Email verified successfully');
+    return successResponse(null, "Email verified successfully");
   }
 
-  @HandleErrors('Failed to login')
+  @HandleErrors("Failed to login")
   async login(
     dto: LoginDto,
   ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
@@ -109,11 +109,11 @@ export class AuthService {
         user: plainToInstance(UserEntity, user),
         token,
       },
-      'Login successful',
+      "Login successful",
     );
   }
 
-  @HandleErrors('Failed to process forgot password request')
+  @HandleErrors("Failed to process forgot password request")
   async forgotPassword(
     dto: ForgotPasswordDto,
   ): Promise<TSuccessResponse<null>> {
@@ -132,10 +132,10 @@ export class AuthService {
 
     await this.mailService.sendPasswordResetEmail(user.email, resetToken);
 
-    return successResponse(null, 'Reset link was sent to your email');
+    return successResponse(null, "Reset link was sent to your email");
   }
 
-  @HandleErrors('Failed to set new password')
+  @HandleErrors("Failed to set new password")
   async setNewPassword(
     dto: SetNewPasswordDto,
   ): Promise<TSuccessResponse<null>> {
@@ -154,10 +154,10 @@ export class AuthService {
       },
     });
 
-    return successResponse(null, 'Password updated successfully');
+    return successResponse(null, "Password updated successfully");
   }
 
-  @HandleErrors('Failed to reset password')
+  @HandleErrors("Failed to reset password")
   async resetPassword(dto: ResetPasswordDto): Promise<TSuccessResponse<null>> {
     const user = await this.findUserByEmail(dto.email);
     this.validateUserHasPassword(user, dto.email);
@@ -171,10 +171,10 @@ export class AuthService {
       data: { password: hashedNewPassword },
     });
 
-    return successResponse(null, 'Password updated successfully');
+    return successResponse(null, "Password updated successfully");
   }
 
-  @HandleErrors('Failed to login with google')
+  @HandleErrors("Failed to login with google")
   async googleLogin(
     dto: GoogleLoginDto,
   ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
@@ -196,11 +196,11 @@ export class AuthService {
           emailVerified: true,
           profile: {
             create: {
-              name: payload.name ?? 'Unnamed Google User',
-              bio: '',
+              name: payload.name ?? "Unnamed Google User",
+              bio: "",
               avatar: payload.picture,
-              website: '',
-              location: '',
+              website: "",
+              location: "",
             },
           },
         },
@@ -224,11 +224,11 @@ export class AuthService {
         user: plainToInstance(UserEntity, user),
         token,
       },
-      'Google login successful',
+      "Google login successful",
     );
   }
 
-  @HandleErrors('Failed to generate login code')
+  @HandleErrors("Failed to generate login code")
   async sendLoginCode(
     dto: EmailLoginRequestDto,
   ): Promise<TSuccessResponse<null>> {
@@ -246,10 +246,10 @@ export class AuthService {
 
     await this.mailService.sendLoginCodeEmail(user.email, code.toString());
 
-    return successResponse(null, 'Login code send successfully');
+    return successResponse(null, "Login code send successfully");
   }
 
-  @HandleErrors('Failed to verify code')
+  @HandleErrors("Failed to verify code")
   async verifyLoginCode(
     dto: EmailLoginVerifyDto,
   ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
@@ -277,7 +277,7 @@ export class AuthService {
         user: plainToInstance(UserEntity, user),
         token,
       },
-      'Login successful',
+      "Login successful",
     );
   }
 
@@ -346,7 +346,7 @@ export class AuthService {
 
   private validateToken(token: string): void {
     if (!token) {
-      throw new AppError(ErrorCodeEnum.INVALID_TOKEN, 'Token not found', 400);
+      throw new AppError(ErrorCodeEnum.INVALID_TOKEN, "Token not found", 400);
     }
   }
 
