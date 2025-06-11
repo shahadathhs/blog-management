@@ -9,8 +9,8 @@ import { Prisma } from '@prisma/client';
 import { AppError } from './handle-errors.app';
 
 export function simplifyError(
-  error: unknown,
-  customMessage = 'Operation failed',
+  error: Error,
+  customMessage = 'Operation Failed',
   record = 'Record',
 ): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {

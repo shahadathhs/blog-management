@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import 'reflect-metadata';
 import { AppModule } from './app/app.module';
 import { ENVEnum } from './common/enum/env.enum';
+import { AllExceptionsFilter } from './common/filter/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,8 @@ async function bootstrap() {
       transform: true, // * auto-transform payloads to DTO instances
     }),
   );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // * Swagger config
   const config = new DocumentBuilder()

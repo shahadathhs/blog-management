@@ -1,9 +1,9 @@
 import { simplifyError } from './handle-errors.simplify';
 
-export function HandleErrors(customMessage?: string) {
+export function HandleErrors(customMessage?: string, record?: string) {
   return function <T>(
     _target: T,
-    propertyName: string,
+    _propertyName: string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     descriptor: TypedPropertyDescriptor<(...args: unknown[]) => Promise<any>>,
   ) {
@@ -17,7 +17,7 @@ export function HandleErrors(customMessage?: string) {
       try {
         return await method.apply(this, args);
       } catch (error) {
-        simplifyError(error, customMessage || `Failed to ${propertyName}`);
+        simplifyError(error, customMessage, record);
       }
     };
   };

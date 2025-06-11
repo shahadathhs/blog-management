@@ -12,7 +12,7 @@ import { ErrorMessages } from '@project/common/error/handle-errors.message';
 import { JWTPayload } from '@project/common/jwt/jwt-payload.interface';
 import {
   successResponse,
-  TSuccessResponse,
+  TResponse,
 } from '@project/common/utils/response.util';
 import { MailService } from '@project/mail/mail.service';
 import { PrismaService } from '@project/prisma/prisma.service';
@@ -48,7 +48,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to register user')
-  async register(dto: RegisterDto): Promise<TSuccessResponse<UserEntity>> {
+  async register(dto: RegisterDto): Promise<TResponse<UserEntity>> {
     const hashedPassword = await this.hashPassword(dto.password);
     const verificationToken = this.generateVerificationToken(dto.email);
 
@@ -78,7 +78,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to verify email')
-  async verifyEmail(token: string): Promise<TSuccessResponse<null>> {
+  async verifyEmail(token: string): Promise<TResponse<null>> {
     this.validateToken(token);
 
     const user = await this.findUserByVerificationToken(token);
@@ -97,7 +97,7 @@ export class AuthService {
   @HandleErrors('Failed to login')
   async login(
     dto: LoginDto,
-  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+  ): Promise<TResponse<{ user: UserEntity; token: string }>> {
     const user = await this.findUserByEmail(dto.email);
     this.validateUserForLogin(user, dto.email);
     await this.validatePassword(dto.password, user.password as string);
@@ -114,9 +114,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to process forgot password request')
-  async forgotPassword(
-    dto: ForgotPasswordDto,
-  ): Promise<TSuccessResponse<null>> {
+  async forgotPassword(dto: ForgotPasswordDto): Promise<TResponse<null>> {
     const user = await this.findUserByEmail(dto.email);
 
     const resetToken = this.generateAuthToken(user);
@@ -136,9 +134,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to set new password')
-  async setNewPassword(
-    dto: SetNewPasswordDto,
-  ): Promise<TSuccessResponse<null>> {
+  async setNewPassword(dto: SetNewPasswordDto): Promise<TResponse<null>> {
     this.validateToken(dto.token);
 
     const user = await this.findUserByResetToken(dto.token);
@@ -158,7 +154,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to reset password')
-  async resetPassword(dto: ResetPasswordDto): Promise<TSuccessResponse<null>> {
+  async resetPassword(dto: ResetPasswordDto): Promise<TResponse<null>> {
     const user = await this.findUserByEmail(dto.email);
     this.validateUserHasPassword(user, dto.email);
     await this.validatePassword(dto.currentPassword, user.password as string);
@@ -177,7 +173,7 @@ export class AuthService {
   @HandleErrors('Failed to login with google')
   async googleLogin(
     dto: GoogleLoginDto,
-  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+  ): Promise<TResponse<{ user: UserEntity; token: string }>> {
     this.validateToken(dto.token);
 
     const payload = await this.verifyGoogleToken(dto.token);
@@ -229,9 +225,7 @@ export class AuthService {
   }
 
   @HandleErrors('Failed to generate login code')
-  async sendLoginCode(
-    dto: EmailLoginRequestDto,
-  ): Promise<TSuccessResponse<null>> {
+  async sendLoginCode(dto: EmailLoginRequestDto): Promise<TResponse<null>> {
     const user = await this.findUserByEmail(dto.email);
 
     const { code, hashedCode } = await this.generateLoginCode();
@@ -252,7 +246,7 @@ export class AuthService {
   @HandleErrors('Failed to verify code')
   async verifyLoginCode(
     dto: EmailLoginVerifyDto,
-  ): Promise<TSuccessResponse<{ user: UserEntity; token: string }>> {
+  ): Promise<TResponse<{ user: UserEntity; token: string }>> {
     const user = await this.findUserByEmail(dto.email);
 
     await this.validateLoginCode(

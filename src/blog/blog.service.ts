@@ -3,7 +3,7 @@ import { BlogEntity } from '@project/common/entity/blog.entity';
 import { HandleErrors } from '@project/common/error/handle-errors.decorator';
 import {
   successResponse,
-  TSuccessResponse,
+  TResponse,
 } from '@project/common/utils/response.util';
 import { PrismaService } from '@project/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
@@ -20,7 +20,7 @@ export class BlogService {
   }
 
   @HandleErrors('Failed to retrieve blogs')
-  async findAll(): Promise<TSuccessResponse<BlogEntity[]>> {
+  async findAll(): Promise<TResponse<BlogEntity[]>> {
     const blogs = await this.prisma.blog.findMany();
     return successResponse(
       plainToInstance(BlogEntity, blogs),

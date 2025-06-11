@@ -5,7 +5,7 @@ import { HandleErrors } from '@project/common/error/handle-errors.decorator';
 import { ErrorCodeEnum } from '@project/common/error/handle-errors.enum';
 import {
   successResponse,
-  TSuccessResponse,
+  TResponse,
 } from '@project/common/utils/response.util';
 import { PrismaService } from '@project/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
@@ -16,10 +16,8 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagService {
   constructor(private prisma: PrismaService) {}
 
-  @HandleErrors('Failed to create tag')
-  async create(
-    createTagDto: CreateTagDto,
-  ): Promise<TSuccessResponse<TagEntity>> {
+  @HandleErrors('Failed to create tag', 'Tag')
+  async create(createTagDto: CreateTagDto): Promise<TResponse<TagEntity>> {
     const name = createTagDto.name;
     let slug = createTagDto.slug?.trim();
 
