@@ -1,4 +1,4 @@
-export type TSuccessResponse<T = any> = {
+export type TSuccessResponse<T = unknown> = {
   success: boolean;
   message: string;
   data: T;

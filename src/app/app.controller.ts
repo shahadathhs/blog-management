@@ -28,7 +28,7 @@ export class AppController {
     },
   })
   getHealth(): { status: string; timestamp: string } {
-    console.log(`[HEALTH] Ping received at ${new Date().toISOString()}`);
+    console.info(`[HEALTH] Ping received at ${new Date().toISOString()}`);
     return {
       status: 'ok',
       timestamp: new Date().toISOString(),

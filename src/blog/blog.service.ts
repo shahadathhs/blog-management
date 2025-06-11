@@ -15,7 +15,7 @@ export class BlogService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createBlogDto: CreateBlogDto) {
-    console.log(createBlogDto);
+    console.info(createBlogDto);
     return 'This action adds a new blog';
   }
 
@@ -36,7 +36,7 @@ export class BlogService {
   }
 
   update(id: string, updateBlogDto: UpdateBlogDto) {
-    console.log(updateBlogDto);
+    console.info(updateBlogDto);
     return `This action updates a #${id} blog`;
   }
 

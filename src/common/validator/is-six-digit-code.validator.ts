@@ -12,7 +12,7 @@ export function IsSixDigitCode(validationOptions?: ValidationOptions) {
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any) {
+        validate(value: unknown) {
           const str = String(value).trim();
           return /^\d{6}$/.test(str); // Only passes if exactly 6 digits
         },

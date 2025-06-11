@@ -24,14 +24,16 @@ export class LoggerMiddleware implements NestMiddleware {
 
     console.group(chalk.bgGreen.black.bold('📥 Incoming Request'));
 
-    console.log(`${chalk.cyan('🔗 URL:')} ${chalk.white(originalUrl)}`);
-    console.log(`${chalk.yellow('📬 Method:')} ${chalk.white(method)}`);
-    console.log(`${chalk.magenta('🌐 IP:')} ${chalk.white(ip)}`);
-    console.log(
+    console.info(`${chalk.cyan('🔗 URL:')} ${chalk.white(originalUrl)}`);
+    console.info(`${chalk.yellow('📬 Method:')} ${chalk.white(method)}`);
+    console.info(`${chalk.magenta('🌐 IP:')} ${chalk.white(ip)}`);
+    console.info(
       `${chalk.green('🎯 Headers:')} ${chalk.gray(safeStringify(headers))}`,
     );
-    console.log(`${chalk.blue('📦 Body:')} ${chalk.gray(safeStringify(body))}`);
-    console.log(
+    console.info(
+      `${chalk.blue('📦 Body:')} ${chalk.gray(safeStringify(body))}`,
+    );
+    console.info(
       `${chalk.red('🍪 Cookies:')} ${chalk.gray(safeStringify(cookies))}`,
     );
 
@@ -39,17 +41,17 @@ export class LoggerMiddleware implements NestMiddleware {
 
     // * Capture response body
     const oldJson = res.json.bind(res);
-    res.json = (data: any) => {
+    res.json = (data: unknown) => {
       const duration = Date.now() - startTime;
 
       console.group(chalk.bgCyan.white.bold('📤 Outgoing Response'));
-      console.log(`${chalk.green('📨 Status Code:')} ${res.statusCode}`);
-      console.log(`${chalk.blue('🕒 Response Time:')} ${duration} ms`);
-      console.log(
+      console.info(`${chalk.green('📨 Status Code:')} ${res.statusCode}`);
+      console.info(`${chalk.blue('🕒 Response Time:')} ${duration} ms`);
+      console.info(
         `${chalk.cyan('📦 Response Body:')} ${chalk.gray(JSON.stringify(data, null, 2))}`,
       );
       console.groupEnd();
-      console.log(chalk.gray('-'.repeat(60)));
+      console.info(chalk.gray('-'.repeat(60)));
 
       return oldJson(data);
     };

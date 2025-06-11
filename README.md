@@ -1,5 +1,7 @@
 # BLOG MANAGEMENT PLATFORM
 
+## This project is ongoing
+
 ### Live URL: https://blog-management-ss4f.onrender.com
 
 ### Project Description:

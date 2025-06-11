@@ -20,18 +20,24 @@ export default defineConfig([
     extends: ['js/recommended'],
     rules: {
       'no-console': [
-        'warn',
+        'error',
         { allow: ['warn', 'error', 'info', 'group', 'groupEnd'] },
       ],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-unused-expressions': 'error',
     },
   },
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-namespace': 'warn',
+      'no-undef': 'off',
+    },
   },
-  tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
   {
     files: ['**/*.json'],

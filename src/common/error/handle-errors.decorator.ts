@@ -4,7 +4,8 @@ export function HandleErrors(customMessage?: string) {
   return function <T>(
     _target: T,
     propertyName: string,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<any>>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    descriptor: TypedPropertyDescriptor<(...args: unknown[]) => Promise<any>>,
   ) {
     const method = descriptor.value;
 
