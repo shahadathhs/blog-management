@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { BlogEntity } from 'src/common/entity/blog.entity';
-import { HandleErrors } from 'src/common/error/handle-errors.decorator';
+import { BlogEntity } from '@project/common/entity/blog.entity';
+import { HandleErrors } from '@project/common/error/handle-errors.decorator';
 import {
   successResponse,
   TSuccessResponse,
-} from 'src/common/utils/response.util';
-import { PrismaService } from 'src/prisma/prisma.service';
+} from '@project/common/utils/response.util';
+import { PrismaService } from '@project/prisma/prisma.service';
+import { plainToInstance } from 'class-transformer';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 

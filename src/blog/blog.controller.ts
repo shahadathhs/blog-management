@@ -14,11 +14,11 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { BlogEntity } from 'src/common/entity/blog.entity';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
-import { Roles } from 'src/common/jwt/jwt-roles.decorator';
-import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
+import { BlogEntity } from '@project/common/entity/blog.entity';
+import { UserEnum } from '@project/common/enum/user.enum';
+import { JwtAuthGuard } from '@project/common/jwt/jwt-auth.guard';
+import { Roles } from '@project/common/jwt/jwt-roles.decorator';
+import { RolesGuard } from '@project/common/jwt/jwt-roles.guard';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';

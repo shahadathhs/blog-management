@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ENVEnum } from '@project/common/enum/env.enum';
 import * as nodemailer from 'nodemailer';
-import { ENVEnum } from 'src/common/enum/env.enum';
 
 @Injectable()
 export class MailService {

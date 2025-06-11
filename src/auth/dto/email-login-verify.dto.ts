@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsSixDigitCode } from '@project/common/validator/is-six-digit-code.validator';
 import { IsEmail } from 'class-validator';
-import { IsSixDigitCode } from 'src/common/validator/is-six-digit-code.validator';
 
 export class EmailLoginVerifyDto {
   @ApiProperty({

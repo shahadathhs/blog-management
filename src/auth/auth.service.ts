@@ -2,24 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { UserEntity } from '@project/common/entity/user.entity';
+import { ENVEnum } from '@project/common/enum/env.enum';
+import { UserEnum } from '@project/common/enum/user.enum';
+import { AppError } from '@project/common/error/handle-errors.app';
+import { HandleErrors } from '@project/common/error/handle-errors.decorator';
+import { ErrorCodeEnum } from '@project/common/error/handle-errors.enum';
+import { ErrorMessages } from '@project/common/error/handle-errors.message';
+import { JWTPayload } from '@project/common/jwt/jwt-payload.interface';
+import {
+  successResponse,
+  TSuccessResponse,
+} from '@project/common/utils/response.util';
+import { MailService } from '@project/mail/mail.service';
+import { PrismaService } from '@project/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { plainToInstance } from 'class-transformer';
 import { randomInt } from 'crypto';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
-import { UserEntity } from 'src/common/entity/user.entity';
-import { ENVEnum } from 'src/common/enum/env.enum';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { AppError } from 'src/common/error/handle-errors.app';
-import { HandleErrors } from 'src/common/error/handle-errors.decorator';
-import { ErrorCodeEnum } from 'src/common/error/handle-errors.enum';
-import { ErrorMessages } from 'src/common/error/handle-errors.message';
-import { JWTPayload } from 'src/common/jwt/jwt-payload.interface';
-import {
-  successResponse,
-  TSuccessResponse,
-} from 'src/common/utils/response.util';
-import { MailService } from 'src/mail/mail.service';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { EmailLoginRequestDto } from './dto/email-login-request.dto';
 import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';

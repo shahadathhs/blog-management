@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '@prisma/client';
+import { UserEnum } from '@project/common/enum/user.enum';
 import { Exclude, Expose, Type } from 'class-transformer';
-import { UserEnum } from 'src/common/enum/user.enum';
 import { ProfileEntity } from './profile.entity';
 
 @Expose()

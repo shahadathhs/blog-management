@@ -7,19 +7,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserEnum } from 'src/common/enum/user.enum';
-import { JwtAuthGuard } from 'src/common/jwt/jwt-auth.guard';
-import { Roles } from 'src/common/jwt/jwt-roles.decorator';
-import { RolesGuard } from 'src/common/jwt/jwt-roles.guard';
+import { UserEnum } from '@project/common/enum/user.enum';
+import { JwtAuthGuard } from '@project/common/jwt/jwt-auth.guard';
+import { Roles } from '@project/common/jwt/jwt-roles.decorator';
+import { RolesGuard } from '@project/common/jwt/jwt-roles.guard';
 import { AuthService } from './auth.service';
 import { EmailLoginRequestDto } from './dto/email-login-request.dto';
+import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SetNewPasswordDto } from './dto/set-new-password.dto';
-import { EmailLoginVerifyDto } from './dto/email-login-verify.dto';
 
 @ApiTags('auth')
 @Controller('auth')
