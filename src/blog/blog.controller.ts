@@ -32,7 +32,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
-  @ApiOperation({ summary: 'Create a new blog' })
+  @ApiOperation({ summary: 'Create a new blog (starts as draft)' })
   @ApiResponse({ status: 201, description: 'Blog created successfully' })
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -42,7 +42,7 @@ export class BlogController {
   }
 
   @ApiOperation({
-    summary: 'Get all blogs with pagination, search, and tag filtering',
+    summary: 'Get all blogs with pagination, search, tag and published filter',
   })
   @ApiResponse({
     status: 200,
@@ -63,19 +63,21 @@ export class BlogController {
     type: String,
     example: 'typescript',
   })
+  @ApiQuery({ name: 'published', required: false, type: Boolean })
+  @ApiQuery({ name: 'authorId', required: false, type: String })
   @Get()
   findAll(@Query() query: FindAllBlogsQueryDto) {
     return this.blogService.findAll(query);
   }
 
-  @ApiOperation({ summary: 'Get a single blog by ID' })
+  @ApiOperation({ summary: 'Get a single blog by ID with tags' })
   @ApiResponse({ status: 200, type: BlogEntity })
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
 
-  @ApiOperation({ summary: 'Update a blog' })
+  @ApiOperation({ summary: 'Update a blog and its tags' })
   @ApiResponse({ status: 200, description: 'Blog updated successfully' })
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -84,11 +86,20 @@ export class BlogController {
     return this.blogService.update(id, updateBlogDto);
   }
 
-  @ApiOperation({ summary: 'Delete a blog by ID' })
+  @ApiOperation({ summary: 'Toggle publish/unpublish of a blog' })
+  @ApiResponse({ status: 200, description: 'Blog publish status toggled' })
+  @Patch(':id/publish')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserEnum.User, UserEnum.Moderator)
+  togglePublish(@Param('id') id: string) {
+    return this.blogService.togglePublish(id);
+  }
+
+  @ApiOperation({ summary: 'Delete a blog by ID (with cascade)' })
   @ApiResponse({ status: 200, description: 'Blog deleted successfully' })
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserEnum.User)
+  @Roles(UserEnum.User, UserEnum.Moderator)
   remove(@Param('id') id: string) {
     return this.blogService.remove(id);
   }

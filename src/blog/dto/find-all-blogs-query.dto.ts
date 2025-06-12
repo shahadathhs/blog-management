@@ -1,6 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class FindAllBlogsQueryDto {
   @ApiPropertyOptional({ example: 1, description: 'Page number (default: 1)' })
@@ -35,4 +41,20 @@ export class FindAllBlogsQueryDto {
   @IsOptional()
   @IsString()
   tag?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Filter by blog publish status',
+  })
+  @IsOptional()
+  @IsBoolean()
+  published?: boolean;
+
+  @ApiPropertyOptional({
+    example: '533677a1-89e1-4baa-b46f-ab07e2012290',
+    description: 'Filter by author Id',
+  })
+  @IsOptional()
+  @IsString()
+  authorId?: string;
 }
