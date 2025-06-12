@@ -17,6 +17,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 export class TagService {
   constructor(private prisma: PrismaService) {}
 
+  // ------------
   @HandleErrors('Failed to create tag', 'Tag')
   async create(createTagDto: CreateTagDto): Promise<TResponse<TagEntity>> {
     const name = createTagDto.name;
@@ -46,6 +47,7 @@ export class TagService {
     );
   }
 
+  // ------------
   @HandleErrors('Failed to get tags', 'Tags')
   async findAll(
     query: FindAllTagsQueryDto,
@@ -95,8 +97,17 @@ export class TagService {
     );
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} tag`;
+  // ------------
+  @HandleErrors('Failed to retrieve tag', 'Tag')
+  async findOne(id: string): Promise<TResponse<TagEntity>> {
+    const tag = await this.prisma.tag.findUnique({
+      where: { id },
+    });
+
+    return successResponse(
+      plainToInstance(TagEntity, tag),
+      'Tag fetched successfully',
+    );
   }
 
   update(id: string, updateTagDto: UpdateTagDto) {
