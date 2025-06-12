@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '@project/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateBlogDto } from './dto/create-blog.dto';
+import { FindAllBlogsQueryDto } from './dto/find-all-blogs-query.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 
 @Injectable()
@@ -20,7 +21,8 @@ export class BlogService {
   }
 
   @HandleErrors('Failed to retrieve blogs')
-  async findAll(): Promise<TResponse<BlogEntity[]>> {
+  async findAll(query: FindAllBlogsQueryDto): Promise<TResponse<BlogEntity[]>> {
+    console.info(query);
     const blogs = await this.prisma.blog.findMany();
     return successResponse(
       plainToInstance(BlogEntity, blogs),
