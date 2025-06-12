@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlogEntity } from '@project/common/entity/blog.entity';
 import { HandleErrors } from '@project/common/error/handle-errors.decorator';
+import { UserTokenPayload } from '@project/common/jwt/jwt-user.interface';
 import {
   successResponse,
   TResponse,
@@ -16,7 +17,10 @@ export class BlogService {
   constructor(private readonly prisma: PrismaService) {}
 
   @HandleErrors('Failed to create blog')
-  async create(createBlogDto: CreateBlogDto): Promise<TResponse<BlogEntity>> {
+  async create(
+    createBlogDto: CreateBlogDto,
+    user: UserTokenPayload,
+  ): Promise<TResponse<BlogEntity>> {
     const { tagIds, ...rest } = createBlogDto;
 
     // * Create or connect tags
@@ -27,14 +31,14 @@ export class BlogService {
     const createdBlog = await this.prisma.blog.create({
       data: {
         ...rest,
-        authorId: 'test',
+        authorId: user.userId,
         tags: {
           create: tagConnections,
         },
       },
       include: {
         tags: { include: { tag: true } },
-        author: true,
+        comments: true,
       },
     });
 

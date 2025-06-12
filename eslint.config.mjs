@@ -20,7 +20,7 @@ export default defineConfig([
     extends: ['js/recommended'],
     rules: {
       'no-console': [
-        'error',
+        'warn',
         { allow: ['warn', 'error', 'info', 'group', 'groupEnd'] },
       ],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

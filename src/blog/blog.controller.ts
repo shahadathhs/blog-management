@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -21,6 +22,10 @@ import { UserEnum } from '@project/common/enum/user.enum';
 import { JwtAuthGuard } from '@project/common/jwt/jwt-auth.guard';
 import { Roles } from '@project/common/jwt/jwt-roles.decorator';
 import { RolesGuard } from '@project/common/jwt/jwt-roles.guard';
+import {
+  RequestWithUser,
+  UserTokenPayload,
+} from '@project/common/jwt/jwt-user.interface';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { FindAllBlogsQueryDto } from './dto/find-all-blogs-query.dto';
@@ -37,8 +42,8 @@ export class BlogController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserEnum.User)
-  create(@Body() createBlogDto: CreateBlogDto) {
-    return this.blogService.create(createBlogDto);
+  create(@Body() createBlogDto: CreateBlogDto, @Req() req: RequestWithUser) {
+    return this.blogService.create(createBlogDto, req.user as UserTokenPayload);
   }
 
   @ApiOperation({

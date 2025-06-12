@@ -25,5 +25,6 @@ export class CreateBlogDto {
 
   @IsArray()
   @IsString({ each: true })
-  tagIds: string[];
+  @IsOptional()
+  tagIds?: string[];
 }
