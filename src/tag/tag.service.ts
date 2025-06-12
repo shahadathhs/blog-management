@@ -100,7 +100,7 @@ export class TagService {
   // ------------
   @HandleErrors('Failed to retrieve tag', 'Tag')
   async findOne(id: string): Promise<TResponse<TagEntity>> {
-    const tag = await this.prisma.tag.findUnique({
+    const tag = await this.prisma.tag.findUniqueOrThrow({
       where: { id },
     });
 
@@ -112,7 +112,10 @@ export class TagService {
 
   // ------------
   @HandleErrors('Failed to update tag', 'Tag or Slug')
-  async update(id: string, updateTagDto: UpdateTagDto) {
+  async update(
+    id: string,
+    updateTagDto: UpdateTagDto,
+  ): Promise<TResponse<TagEntity>> {
     const data = {
       ...(updateTagDto.name && { name: updateTagDto.name }),
       ...(updateTagDto.slug && { slug: updateTagDto.slug }),
@@ -129,8 +132,12 @@ export class TagService {
     );
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} tag`;
+  // ------------
+  @HandleErrors('Failed to delete tag', 'Tag')
+  async remove(id: string): Promise<TResponse<null>> {
+    await this.prisma.tag.delete({ where: { id } });
+
+    return successResponse(null, 'Tag deleted successfully');
   }
 
   searchTags(searchTerm: string) {
