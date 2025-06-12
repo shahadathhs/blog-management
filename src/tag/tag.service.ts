@@ -110,8 +110,23 @@ export class TagService {
     );
   }
 
-  update(id: string, updateTagDto: UpdateTagDto) {
-    return `This action updates a #${id} tag`;
+  // ------------
+  @HandleErrors('Failed to update tag', 'Tag or Slug')
+  async update(id: string, updateTagDto: UpdateTagDto) {
+    const data = {
+      ...(updateTagDto.name && { name: updateTagDto.name }),
+      ...(updateTagDto.slug && { slug: updateTagDto.slug }),
+    };
+
+    const tag = await this.prisma.tag.update({
+      where: { id },
+      data,
+    });
+
+    return successResponse(
+      plainToInstance(TagEntity, tag),
+      'Tag updated successfully',
+    );
   }
 
   remove(id: string) {
