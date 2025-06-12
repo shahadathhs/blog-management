@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '@project/prisma/prisma.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FindAllTagsQueryDto } from './dto/find-all-tags-query.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 
 @Injectable()
@@ -45,8 +46,53 @@ export class TagService {
     );
   }
 
-  findAll() {
-    return `This action returns all tag`;
+  @HandleErrors('Failed to get tags', 'Tags')
+  async findAll(
+    query: FindAllTagsQueryDto,
+  ): Promise<TResponse<{ data: TagEntity[]; total: number }>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const search = query.search ?? '';
+    const order = query.order ?? 'asc';
+
+    const skip = (page - 1) * limit;
+
+    const where = search
+      ? {
+          OR: [
+            {
+              name: {
+                contains: search,
+                mode: this.prisma.utils.QueryMode.insensitive,
+              },
+            },
+            {
+              slug: {
+                contains: search,
+                mode: this.prisma.utils.QueryMode.insensitive,
+              },
+            },
+          ],
+        }
+      : {};
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.tag.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: order },
+      }),
+      this.prisma.tag.count({ where }),
+    ]);
+
+    return successResponse(
+      {
+        data: plainToInstance(TagEntity, data),
+        total,
+      },
+      'Tags fetched successfully',
+    );
   }
 
   findOne(id: string) {

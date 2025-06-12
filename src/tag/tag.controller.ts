@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '@project/common/jwt/jwt-auth.guard';
 import { Roles } from '@project/common/jwt/jwt-roles.decorator';
 import { RolesGuard } from '@project/common/jwt/jwt-roles.guard';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FindAllTagsQueryDto } from './dto/find-all-tags-query.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { TagService } from './tag.service';
 
@@ -29,6 +30,7 @@ import { TagService } from './tag.service';
 export class TagController {
   constructor(private readonly tagService: TagService) {}
 
+  // ----------------
   @ApiOperation({ summary: 'Create a new tag' })
   @ApiBearerAuth()
   @ApiBody({ type: CreateTagDto })
@@ -44,15 +46,17 @@ export class TagController {
     return this.tagService.create(createTagDto);
   }
 
-  @ApiOperation({ summary: 'Get all tags' })
+  // ----------------
+  @ApiOperation({ summary: 'Get all tags with pagination and search' })
   @ApiResponse({ status: 200, description: 'List of tags' })
   @Roles(UserEnum.Admin, UserEnum.Moderator, UserEnum.User)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
-  findAll() {
-    return this.tagService.findAll();
+  findAll(@Query() query: FindAllTagsQueryDto) {
+    return this.tagService.findAll(query);
   }
 
+  // ----------------
   @ApiOperation({ summary: 'Get a single tag by ID' })
   @ApiResponse({ status: 200, description: 'Tag details' })
   @ApiResponse({ status: 404, description: 'Tag not found' })
@@ -61,6 +65,7 @@ export class TagController {
     return this.tagService.findOne(id);
   }
 
+  // ----------------
   @ApiOperation({ summary: 'Update a tag' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Tag updated successfully' })
@@ -72,6 +77,7 @@ export class TagController {
     return this.tagService.update(id, updateTagDto);
   }
 
+  // ----------------
   @ApiOperation({ summary: 'Delete a tag and cascade delete BlogTag records' })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Tag deleted successfully' })
@@ -83,6 +89,7 @@ export class TagController {
     return this.tagService.remove(id);
   }
 
+  // ----------------
   @ApiOperation({ summary: 'Search tags by name or slug' })
   @ApiResponse({ status: 200, description: 'Filtered tag list' })
   @Get('search/autocomplete')
