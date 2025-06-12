@@ -140,8 +140,36 @@ export class TagService {
     return successResponse(null, 'Tag deleted successfully');
   }
 
-  searchTags(searchTerm: string) {
-    return `This return tag based on ${searchTerm}`;
+  @HandleErrors('Failed to autocomplete tags', 'Tag')
+  async autocomplete(search: string): Promise<TResponse<TagEntity[]>> {
+    console.info(search);
+    const results = await this.prisma.tag.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              startsWith: search,
+              mode: this.prisma.utils.QueryMode.insensitive,
+            },
+          },
+          {
+            slug: {
+              startsWith: search,
+              mode: this.prisma.utils.QueryMode.insensitive,
+            },
+          },
+        ],
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 5,
+    });
+
+    return successResponse(
+      plainToInstance(TagEntity, results),
+      'Autocomplete tags fetched successfully',
+    );
   }
 
   private generateSlug(input: string): string {

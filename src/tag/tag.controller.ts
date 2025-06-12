@@ -93,7 +93,7 @@ export class TagController {
   @ApiOperation({ summary: 'Search tags by name or slug' })
   @ApiResponse({ status: 200, description: 'Filtered tag list' })
   @Get('search/autocomplete')
-  searchTags(@Query('searchTerm') searchTerm: string) {
-    return this.tagService.searchTags(searchTerm);
+  autocomplete(@Query('search') search: string) {
+    return this.tagService.autocomplete(search);
   }
 }
