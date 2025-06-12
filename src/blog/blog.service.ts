@@ -48,15 +48,22 @@ export class BlogService {
   }
 
   @HandleErrors('Failed to retrieve blogs')
-  async findAll(query: FindAllBlogsQueryDto): Promise<TResponse<BlogEntity[]>> {
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
-    const search = query.search ?? '';
-    const order = query.order ?? 'asc';
+  async findAll(
+    query: FindAllBlogsQueryDto,
+  ): Promise<TResponse<{ data: BlogEntity[]; total: number }>> {
+    const {
+      page = 1,
+      limit = 10,
+      search = '',
+      order = 'asc',
+      published,
+      authorId,
+    } = query;
 
+    const sanitizedOrder = order.toLowerCase() === 'desc' ? 'desc' : 'asc';
     const skip = (page - 1) * limit;
 
-    const searchQuery = search
+    const searchFilter = search
       ? {
           OR: [
             {
@@ -75,31 +82,34 @@ export class BlogService {
         }
       : {};
 
-    const blogs = await this.prisma.blog.findMany({
-      where: {
-        published: query.published,
-        authorId: query.authorId,
-        ...searchQuery,
-      },
-      skip,
-      include: {
-        tags: { include: { tag: true } },
-        comments: true,
-        author: { include: { profile: true } },
-      },
-      orderBy: {
-        createdAt: order,
-      },
-      take: query.limit,
-    });
+    const whereClause = {
+      ...(typeof published === 'boolean' ? { published } : {}),
+      ...(authorId ? { authorId } : {}),
+      ...searchFilter,
+    };
+
+    const [total, blogs] = await this.prisma.$transaction([
+      this.prisma.blog.count({ where: whereClause }),
+      this.prisma.blog.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: { createdAt: sanitizedOrder },
+        include: {
+          tags: { include: { tag: true } },
+          comments: true,
+          author: { include: { profile: true } },
+        },
+      }),
+    ]);
 
     const blogsWithFlatTagsAndAuthor = blogs.map((blog) => {
-      const { author, ...rest } = blog;
-      const { profile, email, id } = author;
+      const { author, tags, ...rest } = blog;
+      const { profile, email, id } = author ?? {};
 
       return {
         ...rest,
-        tags: blog.tags.map((tagRelation) => tagRelation.tag),
+        tags: tags?.map((tagRelation) => tagRelation.tag) ?? [],
         author: {
           id,
           email,
@@ -113,7 +123,7 @@ export class BlogService {
     });
 
     return successResponse(
-      plainToInstance(BlogEntity, blogsWithFlatTagsAndAuthor),
+      { data: plainToInstance(BlogEntity, blogsWithFlatTagsAndAuthor), total },
       'Blogs retrieved successfully',
     );
   }
