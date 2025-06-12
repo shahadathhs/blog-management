@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsNumber,
@@ -28,7 +28,7 @@ export class FindAllBlogsQueryDto {
 
   @ApiPropertyOptional({
     example: 'nestjs',
-    description: 'Search by blog title or content',
+    description: 'Search by blog title or slug',
   })
   @IsOptional()
   @IsString()
@@ -47,6 +47,8 @@ export class FindAllBlogsQueryDto {
     description: 'Filter by blog publish status',
   })
   @IsOptional()
+  @Type(() => Boolean)
+  @Transform(({ value }) => value === 'true')
   @IsBoolean()
   published?: boolean;
 
@@ -57,4 +59,12 @@ export class FindAllBlogsQueryDto {
   @IsOptional()
   @IsString()
   authorId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Order blogs based on creation time',
+    example: 'desc',
+  })
+  @IsOptional()
+  @IsString()
+  order?: 'asc' | 'desc';
 }

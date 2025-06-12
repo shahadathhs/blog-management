@@ -142,7 +142,6 @@ export class TagService {
 
   @HandleErrors('Failed to autocomplete tags', 'Tag')
   async autocomplete(search: string): Promise<TResponse<TagEntity[]>> {
-    console.info(search);
     const results = await this.prisma.tag.findMany({
       where: {
         OR: [

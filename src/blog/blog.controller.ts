@@ -19,14 +19,13 @@ import {
 import { BlogEntity } from '@project/common/entity/blog.entity';
 import { UserEnum } from '@project/common/enum/user.enum';
 import { JwtAuthGuard } from '@project/common/jwt/jwt-auth.guard';
+import { GetUser } from '@project/common/jwt/jwt-get-user.decorator';
 import { Roles } from '@project/common/jwt/jwt-roles.decorator';
 import { RolesGuard } from '@project/common/jwt/jwt-roles.guard';
-import { UserTokenPayload } from '@project/common/jwt/jwt-user.interface';
 import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { FindAllBlogsQueryDto } from './dto/find-all-blogs-query.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
-import { GetUser } from '@project/common/jwt/jwt-get-user.decorator';
 
 @ApiTags('Blog')
 @ApiBearerAuth()

@@ -15,7 +15,7 @@ import { UpdateBlogDto } from './dto/update-blog.dto';
 export class BlogService {
   constructor(private readonly prisma: PrismaService) {}
 
-  @HandleErrors('Failed to create blog')
+  @HandleErrors('Failed to create blog', 'Slug or Blog')
   async create(
     createBlogDto: CreateBlogDto,
     userId: string,
@@ -49,22 +49,71 @@ export class BlogService {
 
   @HandleErrors('Failed to retrieve blogs')
   async findAll(query: FindAllBlogsQueryDto): Promise<TResponse<BlogEntity[]>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const search = query.search ?? '';
+    const order = query.order ?? 'asc';
+
+    const skip = (page - 1) * limit;
+
+    const searchQuery = search
+      ? {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: this.prisma.utils.QueryMode.insensitive,
+              },
+            },
+            {
+              slug: {
+                contains: search,
+                mode: this.prisma.utils.QueryMode.insensitive,
+              },
+            },
+          ],
+        }
+      : {};
+
     const blogs = await this.prisma.blog.findMany({
       where: {
         published: query.published,
         authorId: query.authorId,
+        ...searchQuery,
       },
+      skip,
       include: {
         tags: { include: { tag: true } },
-        author: true,
+        comments: true,
+        author: { include: { profile: true } },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: order,
       },
+      take: query.limit,
+    });
+
+    const blogsWithFlatTagsAndAuthor = blogs.map((blog) => {
+      const { author, ...rest } = blog;
+      const { profile, email, id } = author;
+
+      return {
+        ...rest,
+        tags: blog.tags.map((tagRelation) => tagRelation.tag),
+        author: {
+          id,
+          email,
+          name: profile?.name ?? null,
+          bio: profile?.bio ?? '',
+          avatar: profile?.avatar ?? null,
+          website: profile?.website ?? null,
+          location: profile?.location ?? '',
+        },
+      };
     });
 
     return successResponse(
-      plainToInstance(BlogEntity, blogs),
+      plainToInstance(BlogEntity, blogsWithFlatTagsAndAuthor),
       'Blogs retrieved successfully',
     );
   }
