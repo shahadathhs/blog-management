@@ -1,8 +1,8 @@
 {
   "name": "blog-management",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "A full-featured backend for managing blogs, users, comments, notifications, and views — built with NestJS, TypeScript, Prisma, and PostgreSQL.",
+  "author": "https://github.com/shahadathhs",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -11,7 +11,8 @@
     "start:debug": "nest start --debug --watch",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "format": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
+    "format:fix": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "build": "nest build",
     "start:prod": "node dist/main",
     "nest:m": "npx nest g resource",
