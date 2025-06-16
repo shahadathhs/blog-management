@@ -12,6 +12,8 @@ jobs:
     name: 🧪 CI - Lint, Build, Format
     runs-on: ubuntu-latest
 
+    if: github.event_name == 'pull_request'
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
@@ -77,8 +79,6 @@ jobs:
     runs-on: ubuntu-latest
 
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    needs: [ci, db]
 
     steps:
       - name: 🔁 Trigger Render Deploy Hook
