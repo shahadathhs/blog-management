@@ -1,28 +1,31 @@
 services:
   api:
-    image: shahadathhs/blog-management:latest
-
-    container_name: blog-management-container
-
     restart: unless-stopped
-
-    networks:
-      - blog-management-network
 
     build:
       context: .
       dockerfile: Dockerfile
 
+    image: shahadathhs/blog-management:latest
+
+    container_name: blog-management-api
+
     env_file:
       - .env
+
     ports:
       - '8080:8080'
 
     volumes:
-      - ./:/app # * for live-reload
-      - ./generated:/app/generated
-      - /app/node_modules
+      - .:/app # host bind mount
+      - /app/node_modules # anonymous volume for node_modules
+      - /app/generated # anonymous volume for prisma client generated
+
+    networks:
+      - blog-network
+
+    command: sh -c "pnpm prisma generate && pnpm run dev"
 
 networks:
-  blog-management-network:
+  blog-network:
     driver: bridge
