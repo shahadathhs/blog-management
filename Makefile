@@ -1,174 +1,137 @@
-### * Docker Compose Setup * ###
+### * Docker Setup for Blog Management * ###
 # ─────────────────────────────────────────────────────────────────────────────
-# Project-wide vars
 COMPOSE_FILE := docker-compose.yml
 PROJECT_NAME := blog-management
 SERVICE      := api
 IMAGE        := shahadathhs/blog-management:latest
+CONTAINER    := blog-management-api
+NETWORK      := blog-network
 
 # shorthand for docker‐compose
 DC := docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE)
 
-# ─────────────────────────────────────────────────────────────────────────────
-.PHONY: help up down restart logs ps build prune rebuild gen migrate shell
+.PHONY: help up down restart logs ps build prune rebuild shell \
+        create-network check-env clean-hard prune-all view-* run run-temp \
+        start start-attached stop restart-container remove-container \
+        remove-image rebuild-container exec-shell push
 
+# ─────────────────────────────────────────────────────────────────────────────
 help:
-	@echo "Usage:"
-	@echo "  make up          # Build & start containers (detached)"
-	@echo "  make down        # Stop & remove containers + volumes"
-	@echo "  make restart     # Restart all services"
-	@echo "  make logs        # Follow logs for all services"
-	@echo "  make ps          # List containers"
-	@echo "  make build       # Build/rebuild images"
-	@echo "  make prune       # Prune dangling containers/images/volumes"
-	@echo "  make rebuild     # Down, build, then up"
-	@echo
-	@echo "  make gen         # Generate Prisma client inside the api container"
-	@echo "  make migrate     # Run Prisma migrations (dev) inside the api container"
-	@echo "  make shell       # Open a shell in the api container"
+	@echo "📘 Usage:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 # ─────────────────────────────────────────────────────────────────────────────
-up:
-	@echo "🚀 Starting $(PROJECT_NAME)..."
+up: ## Build & start services
+	@echo "🚀 Starting containers..."
 	@$(DC) up -d
 
-down:
-	@echo "🛑 Stopping $(PROJECT_NAME) & removing containers + volumes..."
+down: ## Stop & remove containers + volumes
+	@echo "🛑 Stopping and removing containers..."
 	@$(DC) down -v
 
-restart: down up
+restart: down up ## Restart all services
 
-logs:
-	@echo "📜 Tailing logs for $(PROJECT_NAME)..."
+logs: ## Tail logs
+	@echo "📜 Logs:"
 	@$(DC) logs -f
 
-ps:
-	@echo "📦 Containers status:"
+ps: ## Show container status
 	@$(DC) ps
 
-build:
-	@echo "🔨 Building images..."
-	@$(DC) build --no-cache
+build: ## Build docker image
+	@echo "🔨 Building image..."
+	@docker build -t $(IMAGE) .
 
-prune:
-	@echo "🧹 Pruning dangling containers, images, volumes..."
+push: ## Push image to Docker Hub
+	docker push $(IMAGE)
+
+pull: ## Pull latest image
+	docker pull $(IMAGE)
+
+prune: ## Prune dangling resources
 	@docker system prune -f
 	@docker volume prune -f
 
-rebuild: down build up
+rebuild: down build up ## Rebuild everything
 
-shell:
-	@echo "🔧 Opening shell in $(SERVICE)..."
+shell: ## Open shell inside container
 	@$(DC) exec $(SERVICE) sh
 
 # ─────────────────────────────────────────────────────────────────────────────
+create-network: ## Create custom Docker network
+	@docker network ls | grep -w $(NETWORK) >/dev/null || docker network create $(NETWORK)
 
-# * ---------------------------------------------- * #
+check-env: ## Print env file
+	@test -f .env && cat .env || echo ".env file not found"
 
-### * Dockerfile Setup * ###
-# ==== Network ===
-create-network:
-	docker network create blog-network
-
-# === Build ===
-build:
-	docker build -t shahadathhs/blog-management:latest .
-
-# === Push ===
-push:
-	docker push shahadathhs/blog-management:latest
-
-# === Run ===
-run:
+# ─────────────────────────────────────────────────────────────────────────────
+run: check-env create-network ## Run container with persistent setup
 	docker run --env-file .env \
 		-v "$(pwd):/app" \
 		-v /app/node_modules \
 		-v /app/generated \
 		-p 8080:8080 \
-		--name blog-management-api \
-		--network blog-network \
-		shahadathhs/blog-management:latest \
+		--name $(CONTAINER) \
+		--network $(NETWORK) \
+		$(IMAGE)
 
-run-temp:
+run-temp: check-env create-network ## Run container as temp instance
 	docker run --rm --env-file .env \
 		-v "$(pwd):/app" \
 		-v /app/node_modules \
 		-v /app/generated \
 		-p 8080:8080 \
-		--name blog-management-api \
-		--network blog-network \
-		shahadathhs/blog-management:latest \
+		--name $(CONTAINER) \
+		--network $(NETWORK) \
+		$(IMAGE)
 
-# === Start ===
-start:
-	docker start blog-management-api
+start: ## Start existing container
+	docker start $(CONTAINER)
 
-start-attached:
-	docker start -a blog-management-api
+start-attached: ## Start existing container (attached)
+	docker start -a $(CONTAINER)
 
-# === Stop ===
-stop:
-	docker stop blog-management-api
+stop: ## Stop container
+	docker stop $(CONTAINER)
 
-# === Restart ===
-restart-container:
-	make stop
-	make start
+restart-container: stop start ## Restart the container
 
-# === Remove Containers & Images ===
-remove-container:
-	docker rm blog-management-api
+remove-container: ## Remove container
+	-docker rm $(CONTAINER)
 
-remove-image:
-	docker rmi shahadathhs/blog-management:latest
+remove-image: ## Remove Docker image
+	-docker rmi $(IMAGE)
 
-# === Rebuild ===
-rebuild-container:
-	make stop
-	make remove-container
-	make build
-	make run
+rebuild-container: stop remove-container build run ## Rebuild & run again
 
-# === Logs ===
-logs-follow:
-	docker logs -f blog-management-api
+exec-shell: ## Open shell in container
+	docker exec -it $(CONTAINER) sh
 
-# === Exec ===
-exec-shell:
-	docker exec -it blog-management-api sh
-
-# === Env Check ===
-check-env:
-	@echo "Printing .env variables:"
-	@cat .env
-
-# === Prune & Clean ===
-prune-all:
-	docker container prune -f
-	docker image prune -f
-	docker volume prune -f
-
-clean-hard:
-	-docker stop blog-management-api
-	-docker rm blog-management-api
-	-docker rmi shahadathhs/blog-management:latest
+# ─────────────────────────────────────────────────────────────────────────────
+prune-all: ## Prune everything
 	docker container prune -f
 	docker image prune -f
 	docker volume prune -f
 	docker network prune -f
 
-# === View Volume, Images & Containers & Networks ===
-view-containers:
+clean-hard: ## Stop & remove everything related
+	-docker stop $(CONTAINER)
+	-docker rm $(CONTAINER)
+	-docker rmi $(IMAGE)
+	make prune-all
+
+# ─────────────────────────────────────────────────────────────────────────────
+view-containers: ## List all containers
 	docker ps -a
 
-view-running:
+view-running: ## Show running containers
 	docker ps
 
-view-images:
+view-images: ## Show Docker images
 	docker images
 
-view-volumes:
+view-volumes: ## Show Docker volumes
 	docker volume ls
 
-view-networks:
+view-networks: ## Show Docker networks
 	docker network ls
