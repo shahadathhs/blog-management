@@ -1,4 +1,4 @@
-### * Docker Compose * ###
+### * Docker Compose Setup * ###
 # ─────────────────────────────────────────────────────────────────────────────
 # Project-wide vars
 COMPOSE_FILE := docker-compose.yml
@@ -65,7 +65,11 @@ shell:
 
 # * ---------------------------------------------- * #
 
-### * Dockerfile * ###
+### * Dockerfile Setup * ###
+# ==== Network ===
+create-network:
+	docker network create blog-network
+
 # === Build ===
 build:
 	docker build -t shahadathhs/blog-management:latest .
@@ -74,84 +78,64 @@ build:
 push:
 	docker push shahadathhs/blog-management:latest
 
-# === Run (Bind Mount) ===
+# === Run ===
 run:
 	docker run --env-file .env \
-		-v "$$(pwd)/logs:/app/logs" \
-		-p 4000:4000 \
-		--name ts-app-container-prod \
-		--network ph-docker-network \
-		shahadathhs/blog-management:prod
+		-v "$(pwd):/app" \
+		-v /app/node_modules \
+		-v /app/generated \
+		-p 8080:8080 \
+		--name blog-management-api \
+		--network blog-network \
+		shahadathhs/blog-management:latest \
 
 run-temp:
 	docker run --rm --env-file .env \
-		-v "$$(pwd)/logs:/app/logs" \
-		-p 4000:4000 \
-		--name ts-app-container-prod \
-		--network ph-docker-network \
-		shahadathhs/blog-management:prod
-
-# === Run (Named Volume) ===
-run-volume:
-	docker run --env-file .env \
-		-v ts-app-logs-latest:/app/logs \
-		-p 4000:4000 \
-		--name ts-app-container-latest \
-		--network ph-docker-network \
-		shahadathhs/blog-management:latest
-
-run-temp-volume:
-	docker run --rm --env-file .env \
-		-v ts-app-logs-latest:/app/logs \
-		-p 4000:4000 \
-		--name ts-app-container-latest \
-		--network ph-docker-network \
-		shahadathhs/blog-management:latest
+		-v "$(pwd):/app" \
+		-v /app/node_modules \
+		-v /app/generated \
+		-p 8080:8080 \
+		--name blog-management-api \
+		--network blog-network \
+		shahadathhs/blog-management:latest \
 
 # === Start ===
 start:
-	docker start ts-app-container-latest
+	docker start blog-management-api
 
 start-attached:
-	docker start -a ts-app-container-latest
+	docker start -a blog-management-api
 
 # === Stop ===
 stop:
-	docker stop ts-app-container-latest
+	docker stop blog-management-api
 
 # === Restart ===
 restart-container:
-	docker stop ts-app-container-latest || true
-	docker start -a ts-app-container-latest
+	make stop
+	make start
 
-# === Remove Containers ===
+# === Remove Containers & Images ===
 remove-container:
-	docker rm ts-app-container-latest
+	docker rm blog-management-api
 
-# === Remove Images ===
 remove-image:
 	docker rmi shahadathhs/blog-management:latest
 
 # === Rebuild ===
 rebuild-container:
-	make stop-prod
-	make remove-container-prod
-	make build-prod
-	make run-prod
-
-rebuild-container-volume:
-	make stop-latest
-	make remove-container-latest
-	make build-latest
-	make run-latest-volume
+	make stop
+	make remove-container
+	make build
+	make run
 
 # === Logs ===
 logs-follow:
-	docker logs -f ts-app-container-latest
+	docker logs -f blog-management-api
 
 # === Exec ===
 exec-shell:
-	docker exec -it ts-app-container-latest sh
+	docker exec -it blog-management-api sh
 
 # === Env Check ===
 check-env:
@@ -165,9 +149,9 @@ prune-all:
 	docker volume prune -f
 
 clean-hard:
-	-docker stop ts-app-container-latest
-	-docker rm ts-app-container-latest
-	-docker rmi shahadathhs/blog-management:prod
+	-docker stop blog-management-api
+	-docker rm blog-management-api
+	-docker rmi shahadathhs/blog-management:latest
 	docker container prune -f
 	docker image prune -f
 	docker volume prune -f
