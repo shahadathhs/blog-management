@@ -1,0 +1,85 @@
+name: CI-DB-CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  ci:
+    name: 🧪 CI - Lint, Build, Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: ⬇️ Enable pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: 📦 Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: 🧹 Run Lint
+        run: pnpm lint
+
+      - name: ✅ Format Check
+        run: pnpm format
+
+      - name: 🏗 Build Project
+        run: pnpm build
+
+  db:
+    name: 🧱 DB - Prisma Format, Validate
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'pull_request'
+
+    needs: ci
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - name: ⬇️ Enable pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+
+      - name: 📦 Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: 🔍 Prisma Schema Validation
+        run: pnpm prisma:validate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🔄 Generate Prisma Client
+        run: pnpm prisma:generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🎯 Prisma Format
+        run: pnpm prisma:format
+
+  cd:
+    name: 🚀 CD - Deploy to Render
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+
+    needs: [ci, db]
+
+    steps:
+      - name: 🔁 Trigger Render Deploy Hook
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
