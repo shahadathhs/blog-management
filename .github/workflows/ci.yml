@@ -24,7 +24,7 @@ jobs:
         run: corepack enable && corepack prepare pnpm@latest --activate
 
       - name: 📦 Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🧹 Lint
         run: pnpm lint
