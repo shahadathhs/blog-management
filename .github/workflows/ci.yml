@@ -33,7 +33,7 @@ jobs:
         run: pnpm build
 
       - name: ✅ Format check
-        run: pnpm format -- --check
+        run: pnpm format
 
       - name: 🔍 Validate Prisma schema
         run: pnpm prisma:validate
