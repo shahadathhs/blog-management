@@ -7,8 +7,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Set working directory
 WORKDIR /app
 
-# Copy package and lock file
-COPY package.json pnpm-lock.yaml ./
+# Copy package, lock file & prisma folder
+COPY package.json pnpm-lock.yaml prisma ./ 
 
 # Install dependencies
 RUN pnpm install
@@ -16,8 +16,8 @@ RUN pnpm install
 # Copy rest of the project files
 COPY . .
 
-# Generate prisma client
-RUN pnpm prisma generate
+# Generate prisma  (Done in postinstall)
+# RUN pnpm prisma generate
 
 # Expose the port
 EXPOSE 8080

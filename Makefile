@@ -10,10 +10,10 @@ NETWORK      := blog-network
 # shorthand for docker‐compose
 DC := docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE)
 
-.PHONY: help up down restart logs ps build prune rebuild shell \
-        create-network check-env clean-hard prune-all view-* run run-temp \
-        start start-attached stop restart-container remove-container \
-        remove-image rebuild-container exec-shell push
+.PHONY: help up down restart logs ps prune rebuild shell \
+        create-network check-env clean-hard prune-all view-* \
+        stop-container restart-container run-container rebuild-container \
+        exec-shell remove push build pull
 
 # ─────────────────────────────────────────────────────────────────────────────
 help:
@@ -48,6 +48,9 @@ push: ## Push image to Docker Hub
 pull: ## Pull latest image
 	docker pull $(IMAGE)
 
+remove: ## Remove Docker image
+	docker rmi $(IMAGE)
+
 prune: ## Prune dangling resources
 	@docker system prune -f
 	@docker volume prune -f
@@ -57,27 +60,16 @@ rebuild: down build up ## Rebuild everything
 shell: ## Open shell inside container
 	@$(DC) exec $(SERVICE) sh
 
-# ─────────────────────────────────────────────────────────────────────────────
-create-network: ## Create custom Docker network
-	@docker network ls | grep -w $(NETWORK) >/dev/null || docker network create $(NETWORK)
-
 check-env: ## Print env file
 	@test -f .env && cat .env || echo ".env file not found"
 
 # ─────────────────────────────────────────────────────────────────────────────
-run: check-env create-network ## Run container with persistent setup
-	docker run --env-file .env \
-		-v "$(pwd):/app" \
-		-v /app/node_modules \
-		-v /app/generated \
-		-p 8080:8080 \
-		--name $(CONTAINER) \
-		--network $(NETWORK) \
-		$(IMAGE)
+create-network: ## Create custom Docker network
+	@docker network ls | grep -w $(NETWORK) >/dev/null || docker network create $(NETWORK)
 
-run-temp: check-env create-network ## Run container as temp instance
+run-container: create-network ## Run container
 	docker run --rm --env-file .env \
-		-v "$(pwd):/app" \
+		-v "$$(pwd):/app" \
 		-v /app/node_modules \
 		-v /app/generated \
 		-p 8080:8080 \
@@ -85,24 +77,12 @@ run-temp: check-env create-network ## Run container as temp instance
 		--network $(NETWORK) \
 		$(IMAGE)
 
-start: ## Start existing container
-	docker start $(CONTAINER)
-
-start-attached: ## Start existing container (attached)
-	docker start -a $(CONTAINER)
-
-stop: ## Stop container
+stop-container: ## Stop container
 	docker stop $(CONTAINER)
 
 restart-container: stop start ## Restart the container
 
-remove-container: ## Remove container
-	-docker rm $(CONTAINER)
-
-remove-image: ## Remove Docker image
-	-docker rmi $(IMAGE)
-
-rebuild-container: stop remove-container build run ## Rebuild & run again
+rebuild-container: stop-container remove-container build run-container ## Rebuild & run again
 
 exec-shell: ## Open shell in container
 	docker exec -it $(CONTAINER) sh
