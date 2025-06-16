@@ -1,0 +1,24 @@
+services:
+  api:
+    restart: unless-stopped
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: shahadathhs/blog-management:latest
+
+    container_name: blog-management-api
+
+    env_file:
+      - .env
+
+    ports:
+      - '8080:8080'
+
+    volumes:
+      - .:/app # host bind mount
+      - /app/node_modules # anonymous volume for node_modules
+      - /app/generated # anonymous volume for prisma client generated
+
+    command: sh -c "pnpm prisma generate && pnpm run dev"

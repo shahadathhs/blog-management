@@ -1,12 +1,26 @@
 # BLOG MANAGEMENT PLATFORM
 
-> A full-featured backend for managing blogs, users, comments, notifications, and views — built with NestJS, TypeScript, Prisma, and PostgreSQL.
+> A full-featured backend for managing blogs, users, comments, notifications, and views — built with NestJS, TypeScript, Prisma, PostgreSQL, Docker, and CI/CD pipelines.
 
 > 🚧 Note: This project is still ongoing
 
 ---
 
-## 📌 Project Summary
+## Table of Contents
+
+- [Project Summary](#project-summary)
+- [Live Links](#live-links)
+- [Tech Stack](#tech-stack)
+- [Makefile Usage](#makefile-usage)
+- [CI/CD Pipeline](#ci/cd-pipeline)
+- [How to Run Locally](#how-to-run-locally)
+- [Environment Variables](#environment-variables)
+- [API Docs](#api-docs)
+- [Future Improvements](#future-improvements)
+
+---
+
+## Project Summary
 
 This is a scalable, secure backend REST API designed for managing a modern blogging platform with features like:
 
@@ -21,41 +35,74 @@ This is a scalable, secure backend REST API designed for managing a modern blogg
 
 ---
 
-### 🔗 Live API: [https://blog-management-ss4f.onrender.com](https://blog-management-ss4f.onrender.com)
+## Live Links
 
-### 📘 Swagger Docs: [https://blog-management-ss4f.onrender.com/docs](https://blog-management-ss4f.onrender.com/docs)
-
-### 🧩 ER Diagram: [https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12](https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12)
-
-### 💻 GitHub Repo: [github.com/shahadathhs/blog-management](https://github.com/shahadathhs/blog-management)
+- **Live API:** [https://blog-management-ss4f.onrender.com](https://blog-management-ss4f.onrender.com)
+- **Swagger Docs:** [https://blog-management-ss4f.onrender.com/docs](https://blog-management-ss4f.onrender.com/docs)
+- **ER Diagram:** [https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12](https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12)
+- **GitHub Repo:** [github.com/shahadathhs/blog-management](https://github.com/shahadathhs/blog-management)
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Language:** TypeScript
 - **Framework:** [NestJS](https://nestjs.com/)
 - **ORM:** [Prisma](https://www.prisma.io/)
 - **Database:** PostgreSQL (hosted on [Neon](https://neon.tech/))
 - **Auth:** OAuth2 (Google), JWT
+- **Containerization:** Docker & Docker Compose (using Node.js 22-slim and pnpm)
+- **CI/CD:** GitHub Actions for automated linting, building, Prisma validation, and deployment to Render
 - **Deployment:** [Render](https://render.com/)
 - **Logging:** Winston + Chalk
 
 ---
 
-## 🌱 Models Overview
+## Makefile Usage
 
-- **User**: Supports roles, OAuth2, email/password login, email verification, and reset tokens.
-- **Profile**: One-to-one relation with `User`, extends user info (bio, avatar, location).
-- **Blog**: Belongs to a `User`, can have multiple `Tags`, `Views`, `Comments`, and triggers `Notifications`.
-- **Comment**: Supports nested replies and tracks edit status.
-- **View**: Tracks blog views by user or anonymously with IP & user agent.
-- **Tag**: Categorizes blogs with many-to-many relation via `BlogTag`.
-- **Notification**: Notifies users of key actions (comment, reply, mention, etc.)
+To simplify development, container management, and common operations, this project provides a `Makefile` with handy commands. Ensure Docker and Docker Compose are installed.
+
+| Command      | Description                               |
+| ------------ | ----------------------------------------- |
+| `make up`    | Build and start services in detached mode |
+| `make down`  | Stop and remove containers and volumes    |
+| `make logs`  | Tail service logs                         |
+| `make ps`    | List container status                     |
+| `make build` | Build the Docker image locally            |
+| `make push`  | Push the image to Docker Hub              |
+| `make pull`  | Pull the latest image from Docker Hub     |
+| `make shell` | Open a shell inside the `api` container   |
+| `make prune` | Clean up unused Docker resources          |
+
+Use these instead of direct `docker` or `docker-compose` commands.
 
 ---
 
-## 🚀 How to Run Locally
+## CI/CD Pipeline
+
+A GitHub Actions workflow (`.github/workflows/ci-db-cd.yml`) automates:
+
+1. **CI Checks** (on pull requests):
+
+   - Lint with `pnpm lint`
+   - Format validation with `pnpm format`
+   - Build with `pnpm build`
+
+2. **Prisma Validation** (on pull requests after CI):
+
+   - Schema validation (`prisma:validate`)
+   - Client generation (`prisma:generate`)
+   - Schema formatting (`prisma:format`)
+
+3. **Continuous Deployment** (on `main` branch pushes):
+
+   - Triggers a Render deploy hook via a secure secret
+
+This ensures code quality, schema integrity, and automated deployments.
+
+---
+
+## How to Run Locally
 
 ### 1. Clone the Repo
 
@@ -63,8 +110,6 @@ This is a scalable, secure backend REST API designed for managing a modern blogg
 git clone https://github.com/shahadathhs/blog-management.git
 cd blog-management
 ```
-
-
 
 ### 2. Install Dependencies
 
@@ -100,7 +145,7 @@ Server will be running at `http://localhost:8080`
 
 ---
 
-## 🔐 Example `.env` File
+## Environment Variables
 
 ```env
 # Database
@@ -118,24 +163,24 @@ JWT_EXPIRES_IN=1d
 MAIL_USER=email
 MAIL_APP_PASSWORD=app_password
 
-# Oauth
+# OAuth
 OAUTH_CLIENT_ID=oauth_id
 OAUTH_CLIENT_SECRET=oauth_secret
 
-# Frontend URL
+# Frontend URLs
 FRONTEND_EMAIL_VERIFY_URL=http://localhost:3000/auth/verify-email
 FRONTEND_PASSWORD_RESET_URL=http://localhost:3000/auth/password-reset
 ```
 
 ---
 
-## 📄 API Docs
+## API Docs
 
 Visit Swagger UI: [https://blog-management-ss4f.onrender.com/docs](https://blog-management-ss4f.onrender.com/docs)
 
 ---
 
-## 🧠 Future Improvements
+## Future Improvements
 
 - Admin dashboard (view/edit users, blogs, tags)
 - Rate-limiting, throttling, and abuse protection
@@ -143,13 +188,3 @@ Visit Swagger UI: [https://blog-management-ss4f.onrender.com/docs](https://blog-
 - AI-generated tags and summaries for blogs
 - Markdown/MDX support for blog content
 - Support for image uploads via S3 or Cloudinary
-
----
-
-## 📬 Contact
-
-Feel free to reach out for feedback or collaboration!
-
----
-
-
