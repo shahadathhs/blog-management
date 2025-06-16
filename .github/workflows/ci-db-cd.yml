@@ -76,7 +76,7 @@ jobs:
     name: 🚀 CD - Deploy to Render
     runs-on: ubuntu-latest
 
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     needs: [ci, db]
 
