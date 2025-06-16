@@ -21,11 +21,4 @@ services:
       - /app/node_modules # anonymous volume for node_modules
       - /app/generated # anonymous volume for prisma client generated
 
-    networks:
-      - blog-network
-
     command: sh -c "pnpm prisma generate && pnpm run dev"
-
-networks:
-  blog-network:
-    driver: bridge
