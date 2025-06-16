@@ -1,0 +1,28 @@
+services:
+  api:
+    image: shahadathhs/blog-management:latest
+
+    container_name: blog-management-container
+
+    restart: unless-stopped
+
+    networks:
+      - blog-management-network
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env
+    ports:
+      - '8080:8080'
+
+    volumes:
+      - ./:/app # * for live-reload
+      - ./generated:/app/generated
+      - /app/node_modules
+
+networks:
+  blog-management-network:
+    driver: bridge
