@@ -1,57 +1,78 @@
-# * Docker Compose * 
-COMPOSE=docker compose
-PROJECT_NAME=blog-management
-DOCKER_COMPOSE_FILE=docker-compose.yml
-ENV_FILE=.env
+### * Docker Compose * ###
+# ─────────────────────────────────────────────────────────────────────────────
+# Project-wide vars
+COMPOSE_FILE := docker-compose.yml
+PROJECT_NAME := blog-management
+SERVICE      := api
+IMAGE        := shahadathhs/blog-management:latest
 
-# Docker Compose Commands
+# shorthand for docker‐compose
+DC := docker compose -p $(PROJECT_NAME) -f $(COMPOSE_FILE)
+
+# ─────────────────────────────────────────────────────────────────────────────
+.PHONY: help up down restart logs ps build prune rebuild gen migrate shell
+
+help:
+	@echo "Usage:"
+	@echo "  make up          # Build & start containers (detached)"
+	@echo "  make down        # Stop & remove containers + volumes"
+	@echo "  make restart     # Restart all services"
+	@echo "  make logs        # Follow logs for all services"
+	@echo "  make ps          # List containers"
+	@echo "  make build       # Build/rebuild images"
+	@echo "  make prune       # Prune dangling containers/images/volumes"
+	@echo "  make rebuild     # Down, build, then up"
+	@echo
+	@echo "  make gen         # Generate Prisma client inside the api container"
+	@echo "  make migrate     # Run Prisma migrations (dev) inside the api container"
+	@echo "  make shell       # Open a shell in the api container"
+
+# ─────────────────────────────────────────────────────────────────────────────
 up:
-	@echo "🚀 Starting all containers..."
-	$(COMPOSE) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) up -d
+	@echo "🚀 Starting $(PROJECT_NAME)..."
+	@$(DC) up -d
 
 down:
-	@echo "🛑 Stopping and removing all containers & volumes..."
-	$(COMPOSE) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) down -v
+	@echo "🛑 Stopping $(PROJECT_NAME) & removing containers + volumes..."
+	@$(DC) down -v
 
 restart: down up
 
 logs:
-	@echo "📜 Showing logs (follow mode)..."
-	$(COMPOSE) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) logs -f
+	@echo "📜 Tailing logs for $(PROJECT_NAME)..."
+	@$(DC) logs -f
 
 ps:
-	@echo "📦 Container status:"
-	$(COMPOSE) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) ps
+	@echo "📦 Containers status:"
+	@$(DC) ps
 
 build:
-	@echo "🔨 Building images (if Docker files are present locally)..."
-	$(COMPOSE) -p $(PROJECT_NAME) -f $(DOCKER_COMPOSE_FILE) build
+	@echo "🔨 Building images..."
+	@$(DC) build --no-cache
 
 prune:
-	@echo "🧹 Pruning dangling containers and volumes..."
-	docker system prune -f
-	docker volume prune -f
+	@echo "🧹 Pruning dangling containers, images, volumes..."
+	@docker system prune -f
+	@docker volume prune -f
 
 rebuild: down build up
 
-env:
-	@echo "📁 ENV file: $(ENV_FILE)"
-	@if [ -f $(ENV_FILE) ]; then \
-		echo "🔑 Environment Variables:"; \
-		cat $(ENV_FILE); \
-	else \
-		echo "⚠️  ENV file not found."; \
+shell:
+	@echo "🔧 Opening shell in $(SERVICE)..."
+	@$(DC) exec $(SERVICE) sh
 
-# * ----------------------------------------------
+# ─────────────────────────────────────────────────────────────────────────────
 
-# * Dockerfile *
+# * ---------------------------------------------- * #
+
+### * Dockerfile * ###
 # === Build ===
 build:
-	docker build -t shahadathhs/my-ts-app:latest .
+	docker build -t shahadathhs/blog-management:latest .
 
 # === Push ===
 push:
-	docker push shahadathhs/my-ts-app:latest
+	docker push shahadathhs/blog-management:latest
 
 # === Run (Bind Mount) ===
 run:
@@ -60,7 +81,7 @@ run:
 		-p 4000:4000 \
 		--name ts-app-container-prod \
 		--network ph-docker-network \
-		shahadathhs/my-ts-app:prod
+		shahadathhs/blog-management:prod
 
 run-temp:
 	docker run --rm --env-file .env \
@@ -68,7 +89,7 @@ run-temp:
 		-p 4000:4000 \
 		--name ts-app-container-prod \
 		--network ph-docker-network \
-		shahadathhs/my-ts-app:prod
+		shahadathhs/blog-management:prod
 
 # === Run (Named Volume) ===
 run-volume:
@@ -77,7 +98,7 @@ run-volume:
 		-p 4000:4000 \
 		--name ts-app-container-latest \
 		--network ph-docker-network \
-		shahadathhs/my-ts-app:latest
+		shahadathhs/blog-management:latest
 
 run-temp-volume:
 	docker run --rm --env-file .env \
@@ -85,7 +106,7 @@ run-temp-volume:
 		-p 4000:4000 \
 		--name ts-app-container-latest \
 		--network ph-docker-network \
-		shahadathhs/my-ts-app:latest
+		shahadathhs/blog-management:latest
 
 # === Start ===
 start:
@@ -109,7 +130,7 @@ remove-container:
 
 # === Remove Images ===
 remove-image:
-	docker rmi shahadathhs/my-ts-app:latest
+	docker rmi shahadathhs/blog-management:latest
 
 # === Rebuild ===
 rebuild-container:
@@ -145,13 +166,8 @@ prune-all:
 
 clean-hard:
 	-docker stop ts-app-container-latest
-	-docker stop ts-app-container-prod
-	-docker stop mongodb
 	-docker rm ts-app-container-latest
-	-docker rm ts-app-container-prod
-	-docker rm mongodb
-	-docker rmi shahadathhs/my-ts-app:latest
-	-docker rmi shahadathhs/my-ts-app:prod
+	-docker rmi shahadathhs/blog-management:prod
 	docker container prune -f
 	docker image prune -f
 	docker volume prune -f
