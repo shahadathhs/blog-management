@@ -2,17 +2,7 @@
 
 > A full-featured backend for managing blogs, users, comments, notifications, and views — built with NestJS, TypeScript, Prisma, and PostgreSQL.
 
----
-
-## 🚧 Note: This project is still ongoing
-
-### 🔗 Live API: [https://blog-management-ss4f.onrender.com](https://blog-management-ss4f.onrender.com)
-
-### 📘 Swagger Docs: [https://blog-management-ss4f.onrender.com/docs](https://blog-management-ss4f.onrender.com/docs)
-
-### 🧩 ER Diagram: [https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12](https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12)
-
-### 💻 GitHub Repo: [github.com/shahadathhs/blog-management](https://github.com/shahadathhs/blog-management)
+> 🚧 Note: This project is still ongoing
 
 ---
 
@@ -28,6 +18,16 @@ This is a scalable, secure backend REST API designed for managing a modern blogg
 - View tracking (authenticated & anonymous)
 - Notification system for comments, replies, mentions, and blog publishing
 - Extensible profile management for each user
+
+---
+
+### 🔗 Live API: [https://blog-management-ss4f.onrender.com](https://blog-management-ss4f.onrender.com)
+
+### 📘 Swagger Docs: [https://blog-management-ss4f.onrender.com/docs](https://blog-management-ss4f.onrender.com/docs)
+
+### 🧩 ER Diagram: [https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12](https://dbdiagram.io/d/Blog-Management-684f7d4b3cc77757c8fa3f12)
+
+### 💻 GitHub Repo: [github.com/shahadathhs/blog-management](https://github.com/shahadathhs/blog-management)
 
 ---
 
